@@ -1,0 +1,23 @@
+{
+  "name": "@hrms/module-org",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Org structure: legal entities, business units, locations, departments, sub-departments, grades, designations, cost centres, employee code series, setup wizard.",
+  "hrms": { "kind": "module" },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "development": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "migrations"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src test",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": { "@hrms/contracts": "workspace:*", "@hrms/db": "workspace:*", "@hrms/domain": "workspace:*", "@hrms/module-sdk": "workspace:*", "@hrms/platform": "workspace:*", "zod": "4.6.5" }
+}

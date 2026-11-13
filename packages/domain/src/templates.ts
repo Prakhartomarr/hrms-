@@ -10,6 +10,7 @@ export interface RoleTemplate {
 
 const selfService: Grants = {
   [RES.directory]: { view: 'all' },
+  [RES.org]: { view: 'all' },
   [RES.employees]: { view: 'self' },
   [RES.job]: { view: 'self' },
   [RES.pan]: { view: 'self' },

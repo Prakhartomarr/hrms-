@@ -2,7 +2,6 @@ import { z } from 'zod';
 import { grants, scope } from '../access.js';
 import { ok, uuid } from '../primitives.js';
 import { endpoint } from './endpoint.js';
-import { roleAssignment, userRow } from './identity.js';
 
 export const ROLE_TEMPLATES = ['employee', 'manager', 'hr', 'payroll_admin', 'finance', 'cxo'] as const;
 export type RoleTemplateKey = (typeof ROLE_TEMPLATES)[number];
@@ -111,15 +110,6 @@ export const accessApi = {
     params: z.object({ id: uuid }),
     response: z.object({ items: z.array(queueAssignee) }),
     summary: 'Who receives a task routed to this role now',
-  }),
-  setUserRoles: endpoint({
-    method: 'PUT',
-    path: '/api/v1/users/:id/roles',
-    auth: true,
-    params: z.object({ id: uuid }),
-    body: z.object({ assignments: z.array(roleAssignment) }),
-    response: userRow,
-    summary: 'Replace a user’s role assignments',
   }),
   check: endpoint({
     method: 'GET',

@@ -276,4 +276,13 @@ export const identityApi = {
     response: userRow,
     summary: 'Rename, disable or link a user to an employee',
   }),
+  setUserRoles: endpoint({
+    method: 'PUT',
+    path: '/api/v1/users/:id/roles',
+    auth: true,
+    params: z.object({ id: uuid }),
+    body: z.object({ assignments: z.array(roleAssignment) }),
+    response: userRow,
+    summary: 'Replace a user’s role assignments',
+  }),
 };

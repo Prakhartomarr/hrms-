@@ -197,6 +197,14 @@ export interface IdentityRefreshTokensTable {
   created_at: Generated<Date>;
 }
 
+export interface CodeSeriesTable {
+  entity_id: string;
+  tenant_id: string;
+  pattern: string;
+  next_number: Default<number>;
+  updated_at: Default<Date>;
+}
+
 /** Core tables, owned by packages/db/migrations. Modules add their own via `db.as<T>()`. */
 export interface CoreDatabase {
   tenants: TenantsTable;
@@ -211,4 +219,5 @@ export interface CoreDatabase {
   user_roles: UserRolesTable;
   identity_sessions: IdentitySessionsTable;
   identity_refresh_tokens: IdentityRefreshTokensTable;
+  code_series: CodeSeriesTable;
 }

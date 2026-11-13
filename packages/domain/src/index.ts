@@ -7,3 +7,4 @@ export * from './mask.js';
 export * from './diff.js';
 export * from './custom-fields.js';
 export * from './policy.js';
+export * from './names.js';

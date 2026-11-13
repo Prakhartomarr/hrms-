@@ -1,0 +1,39 @@
+{
+  "name": "@hrms/module-identity",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Identity: workspace signup, email and password sign-in, TOTP 2FA, sessions, password reset, SSO stubs, user accounts.",
+  "hrms": {
+    "kind": "module"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "development": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "migrations"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src test",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@hrms/contracts": "workspace:*",
+    "@hrms/db": "workspace:*",
+    "@hrms/domain": "workspace:*",
+    "@hrms/module-sdk": "workspace:*",
+    "@hrms/platform": "workspace:*",
+    "zod": "4.6.5",
+    "qrcode": "1.5.4"
+  },
+  "devDependencies": {
+    "@types/qrcode": "1.5.6"
+  }
+}

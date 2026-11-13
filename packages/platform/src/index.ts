@@ -15,3 +15,5 @@ export * from './redis.js';
 export * from './storage.js';
 export * from './shutdown.js';
 export * from './mail.js';
+export * from './tenancy.js';
+export * from './code-series.js';

@@ -54,4 +54,4 @@ export function createKysely<DB = CoreDatabase>(opts: PostgresOptions): Kysely<D
 }
 
 export type { Kysely, Transaction } from 'kysely';
-export { sql, type RawBuilder, type Expression, type SqlBool } from 'kysely';
+export { sql, type RawBuilder, type Expression, type SqlBool, type Selectable } from 'kysely';
