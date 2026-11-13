@@ -1,0 +1,282 @@
+{
+ "actions": [],
+ "creation": "2026-11-13 18:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "kind",
+  "code",
+  "version",
+  "column_break_status",
+  "status",
+  "needs_verification",
+  "supersedes",
+  "section_period",
+  "effective_from",
+  "effective_to",
+  "column_break_jurisdiction",
+  "country",
+  "state",
+  "local_body",
+  "section_values",
+  "values",
+  "tenant_overridable",
+  "open_question",
+  "section_sources",
+  "sources",
+  "section_review",
+  "reviewed_by",
+  "reviewed_on",
+  "review_notes",
+  "column_break_publish",
+  "published_by",
+  "published_on"
+ ],
+ "fields": [
+  {
+   "fieldname": "kind",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Kind",
+   "options": "CODE_WAGES\nPF\nESI\nPT\nLWF\nINCOME_TAX\nGRATUITY\nBONUS\nMIN_WAGE\nCOMPLIANCE_CALENDAR\nBANK_FORMAT",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "description": "Capitals, digits, hyphen and underscore. For example PF-IN or PT-MH.",
+   "fieldname": "code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Code",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "description": "Defaults to the effective-from date.",
+   "fieldname": "version",
+   "fieldtype": "Data",
+   "label": "Version",
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "column_break_status",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "no_copy": 1,
+   "options": "Draft\nCA verified\nPublished\nWithdrawn",
+   "read_only": 1
+  },
+  {
+   "default": "1",
+   "description": "Values still need checking against the primary notification.",
+   "fieldname": "needs_verification",
+   "fieldtype": "Check",
+   "label": "Needs verification",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "supersedes",
+   "fieldtype": "Link",
+   "label": "Supersedes",
+   "no_copy": 1,
+   "options": "Statutory Pack",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_period",
+   "fieldtype": "Section Break",
+   "label": "Effective period"
+  },
+  {
+   "fieldname": "effective_from",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Effective from",
+   "reqd": 1
+  },
+  {
+   "description": "Last day this version applies. Leave empty when it has no end date yet.",
+   "fieldname": "effective_to",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Effective to"
+  },
+  {
+   "fieldname": "column_break_jurisdiction",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "India",
+   "fieldname": "country",
+   "fieldtype": "Link",
+   "label": "Country",
+   "options": "Country"
+  },
+  {
+   "description": "Two-letter state code, for state packs such as PT and LWF.",
+   "fieldname": "state",
+   "fieldtype": "Data",
+   "label": "State",
+   "length": 2
+  },
+  {
+   "fieldname": "local_body",
+   "fieldtype": "Data",
+   "label": "Local body"
+  },
+  {
+   "fieldname": "section_values",
+   "fieldtype": "Section Break",
+   "label": "Values"
+  },
+  {
+   "fieldname": "values",
+   "fieldtype": "JSON",
+   "label": "Values",
+   "reqd": 1
+  },
+  {
+   "description": "JSON list of the value keys a company may override.",
+   "fieldname": "tenant_overridable",
+   "fieldtype": "JSON",
+   "label": "Company may override"
+  },
+  {
+   "fieldname": "open_question",
+   "fieldtype": "Small Text",
+   "label": "Open question"
+  },
+  {
+   "fieldname": "section_sources",
+   "fieldtype": "Section Break",
+   "label": "Sources"
+  },
+  {
+   "fieldname": "sources",
+   "fieldtype": "Table",
+   "label": "Sources",
+   "options": "Statutory Pack Source"
+  },
+  {
+   "fieldname": "section_review",
+   "fieldtype": "Section Break",
+   "label": "Review"
+  },
+  {
+   "fieldname": "reviewed_by",
+   "fieldtype": "Link",
+   "label": "Verified by",
+   "no_copy": 1,
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "reviewed_on",
+   "fieldtype": "Datetime",
+   "label": "Verified on",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "review_notes",
+   "fieldtype": "Small Text",
+   "label": "Review notes",
+   "no_copy": 1
+  },
+  {
+   "fieldname": "column_break_publish",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "published_by",
+   "fieldtype": "Link",
+   "label": "Published by",
+   "no_copy": 1,
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "published_on",
+   "fieldtype": "Datetime",
+   "label": "Published on",
+   "no_copy": 1,
+   "read_only": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-11-13 18:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "GAMCS HR",
+ "name": "Statutory Pack",
+ "naming_rule": "By script",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager",
+   "write": 1
+  },
+  {
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Statutory Reviewer",
+   "write": 1
+  },
+  {
+   "read": 1,
+   "report": 1,
+   "role": "HR User"
+  }
+ ],
+ "search_fields": "kind,effective_from,status",
+ "sort_field": "effective_from",
+ "sort_order": "DESC",
+ "states": [
+  {
+   "color": "Gray",
+   "title": "Draft"
+  },
+  {
+   "color": "Blue",
+   "title": "CA verified"
+  },
+  {
+   "color": "Green",
+   "title": "Published"
+  },
+  {
+   "color": "Red",
+   "title": "Withdrawn"
+  }
+ ],
+ "title_field": "code",
+ "track_changes": 1
+}
