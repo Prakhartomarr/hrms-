@@ -81,12 +81,14 @@ infra/dev/hr.sh nuke        # remove containers, volumes and ~/hrms-bench (asks 
 `infra/dev/hr.sh seed` runs `bench --site hr.localhost execute gamcs_hr.seed.demo.run`. It is idempotent, so it is safe to re-run. It creates:
 
 - Company **Demo Pvt Ltd** (India, INR, FY Apr to Mar) with branches Bengaluru and Mumbai, plus departments
-- Holiday list for 2026 and 2027 (weekly offs plus national holidays)
-- About 50 employees with a reporting hierarchy (CEO, then department heads, then team members)
+- Holiday list "Demo India 2026-27" (Jan 2026 to Mar 2027: Sundays plus national holidays), assigned to the company via a v16 Holiday List Assignment
+- Fiscal year and Payroll Period FY 2026-27 (Apr to Mar)
+- 50 employees (`DPL001` to `DPL050`) with a reporting hierarchy: a CEO, 6 department heads reporting to the CEO, and team members reporting to their head. Heads are the leave approvers for their departments.
 - Leave types (Casual, Sick, Privilege, Leave Without Pay) and a leave policy, assigned to everyone
-- Shift types (General, Early) with auto-attendance, and geolocation check-in enabled in HR Settings
+- Shift types General (09:30 to 18:30) and Early (07:00 to 16:00) with auto-attendance and late-entry marking. Each office has a Shift Location with a 200 m check-in radius; every employee has a shift assignment tied to their branch's location; and geolocation tracking plus mobile check-in are enabled in HR Settings.
 - Salary components Basic (50% of gross), HRA (20%), Special Allowance (30%), PF (12% of basic, capped at the ₹15,000 wage ceiling), ESI (0.75% while gross is ₹21,000 or less), Professional Tax (₹200 when gross is ₹25,000 or more, Karnataka-style) and Income Tax (TDS). A submitted structure "Demo India Monthly" is assigned to every employee.
 - Income tax slab for FY 2026-27 (new regime): standard deduction ₹75,000, nil tax up to ₹12,00,000 taxable income (87A relief), and 4% cess
+- No historical salary slips. hrms projects TDS only over the months still to be paid, so the first slip you run mid-year shows a lower TDS than a full-year figure would.
 - Desk + `/hrms` logins for the six department heads (for example `simran.mukherjee.038@demo.example`, the HR manager). Their password is `DEMO_PASSWORD` from `.env`, falling back to `ADMIN_PASSWORD`. Administrator is not an employee, so `/hrms` shows "invalid employee" for it. Log in as a department head to try the employee app.
 
 ## Running tests

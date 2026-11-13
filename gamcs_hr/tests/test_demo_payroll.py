@@ -5,6 +5,11 @@ TDS projection covers 12 months) for a throwaway employee with a known monthly g
 """
 
 import frappe
+
+# ERPNext's shared test bootstrap creates calendar-year fiscal years (2012..now+25) on
+# import and refuses to if an Apr-Mar fiscal year already exists. Import it first so
+# the demo's company-scoped Apr-Mar year is added after it, not before it.
+import erpnext.tests.utils  # noqa: F401
 from frappe.tests import IntegrationTestCase
 
 from gamcs_hr.seed import demo
