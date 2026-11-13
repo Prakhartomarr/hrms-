@@ -1,0 +1,41 @@
+{
+  "name": "hrms",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.34.6",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --filter=./apps/* --parallel",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test --concurrency=1",
+    "test:unit": "turbo run test --filter=!@hrms/e2e",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "migrate": "tsx --conditions=development tools/scripts/src/migrate.ts",
+    "seed": "tsx --conditions=development tools/scripts/src/seed.ts",
+    "registry": "tsx --conditions=development tools/scripts/src/registry.ts",
+    "new:module": "tsx tools/generators/new-module.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.5",
+    "@types/node": "24.19.2",
+    "eslint": "9.39.5",
+    "eslint-config-prettier": "10.1.8",
+    "globals": "17.13.0",
+    "prettier": "3.9.10",
+    "tsx": "4.23.15",
+    "turbo": "2.11.7",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.71.1",
+    "vitest": "3.2.7"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}
