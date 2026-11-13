@@ -52,7 +52,7 @@ The first run clones frappe, erpnext, hrms and india_compliance (all `version-16
 
 | What | URL |
 | --- | --- |
-| Desk | http://hr.localhost:8200/app |
+| Desk | http://hr.localhost:8200/app (v16 redirects to `/desk`) |
 | Frappe HR self-service | http://hr.localhost:8200/hrms |
 | Login | http://hr.localhost:8200/login |
 
@@ -71,7 +71,7 @@ infra/dev/hr.sh shell       # bash inside the bench container
 infra/dev/hr.sh migrate     # bench migrate on hr.localhost
 infra/dev/hr.sh build       # rebuild assets
 infra/dev/hr.sh seed        # (re)load demo data, idempotent
-infra/dev/hr.sh test        # run gamcs_hr tests
+infra/dev/hr.sh test        # run gamcs_hr tests on hrtest.localhost
 infra/dev/hr.sh reset       # drop and recreate the site (keeps the bench; asks first)
 infra/dev/hr.sh nuke        # remove containers, volumes and ~/hrms-bench (asks first)
 ```
@@ -85,17 +85,21 @@ infra/dev/hr.sh nuke        # remove containers, volumes and ~/hrms-bench (asks 
 - About 50 employees with a reporting hierarchy (CEO, then department heads, then team members)
 - Leave types (Casual, Sick, Privilege, Leave Without Pay) and a leave policy, assigned to everyone
 - Shift types (General, Early) with auto-attendance, and geolocation check-in enabled in HR Settings
-- Salary components Basic, HRA, Special Allowance, PF, ESI and Professional Tax, plus a submitted salary structure assigned to every employee
-- Income tax slab for FY 2026-27 (new regime)
+- Salary components Basic (50% of gross), HRA (20%), Special Allowance (30%), PF (12% of basic, capped at the ₹15,000 wage ceiling), ESI (0.75% while gross is ₹21,000 or less), Professional Tax (₹200 when gross is ₹25,000 or more, Karnataka-style) and Income Tax (TDS). A submitted structure "Demo India Monthly" is assigned to every employee.
+- Income tax slab for FY 2026-27 (new regime): standard deduction ₹75,000, nil tax up to ₹12,00,000 taxable income (87A relief), and 4% cess
+- Desk + `/hrms` logins for the six department heads (for example `simran.mukherjee.038@demo.example`, the HR manager). Their password is `DEMO_PASSWORD` from `.env`, falling back to `ADMIN_PASSWORD`. Administrator is not an employee, so `/hrms` shows "invalid employee" for it. Log in as a department head to try the employee app.
 
 ## Running tests
 
+Tests run on a separate throwaway site, **`hrtest.localhost`**, so upstream fixtures (`_Test Company` and so on) never pollute the demo site.
+
 ```bash
-infra/dev/hr.sh test                                        # gamcs_hr tests
-infra/dev/hr.sh bench --site hr.localhost run-tests --app hrms --module hrms.hr.doctype.leave_application.test_leave_application
+infra/dev/hr.sh test-site                    # once: create hrtest.localhost with all apps, allow_tests on
+infra/dev/hr.sh test                         # gamcs_hr tests (exact-value payroll checks)
+infra/dev/hr.sh upstream-test hrms.hr.doctype.leave_application.test_leave_application
 ```
 
-Upstream tests need `allow_tests` enabled on the site (`setup.sh` turns it on). Baseline upstream results are recorded in [docs/baseline-tests.md](docs/baseline-tests.md).
+Baseline upstream results are recorded in [docs/baseline-tests.md](docs/baseline-tests.md).
 
 ## Repo layout
 

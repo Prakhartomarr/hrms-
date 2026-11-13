@@ -30,7 +30,7 @@ The earlier from-scratch TypeScript attempt is archived on branch `archive/ts-sc
 
 - Repo: `~/hrms`, mounted into the bench at `~/hrms-bench/apps/gamcs_hr`, so edits are live.
 - Bench: `~/hrms-bench` (outside the repo; created by `infra/dev/setup.sh`).
-- Site: `hr.localhost`. Desk at http://hr.localhost:8200/app; Frappe HR PWA at http://hr.localhost:8200/hrms.
+- Sites: `hr.localhost` (demo data) and `hrtest.localhost` (tests only). Desk at http://hr.localhost:8200/app; Frappe HR PWA at http://hr.localhost:8200/hrms.
 - Versions: frappe / erpnext / hrms / india_compliance on `version-16`. See `docs/decisions/0001-frappe-v16-stack.md`.
 
 ## Common commands (run from `~/hrms`)
@@ -41,13 +41,14 @@ infra/dev/hr.sh up | down | logs   # start / stop / follow
 infra/dev/hr.sh migrate            # bench --site hr.localhost migrate
 infra/dev/hr.sh build              # bench build (all apps); `hr.sh bench build --app gamcs_hr` for ours
 infra/dev/hr.sh seed               # idempotent demo data
-infra/dev/hr.sh test               # bench --site hr.localhost run-tests --app gamcs_hr
-infra/dev/hr.sh bench --site hr.localhost run-tests --module hrms.hr.doctype.attendance.test_attendance
+infra/dev/hr.sh test-site          # once: throwaway test site hrtest.localhost
+infra/dev/hr.sh test               # gamcs_hr tests on hrtest.localhost
+infra/dev/hr.sh upstream-test hrms.hr.doctype.attendance.test_attendance
 infra/dev/hr.sh reset              # drop + recreate site, reinstall apps, reseed
 infra/dev/hr.sh shell              # shell in the bench container
 ```
 
-Tests: put them in `gamcs_hr/tests/` or next to a doctype (`test_<doctype>.py`). Use `frappe.tests.IntegrationTestCase` (v16) and run them against `hr.localhost`, which has `allow_tests` on. Upstream test runs create their own records; reseed afterwards if the demo data looks odd.
+Tests: put them in `gamcs_hr/tests/` or next to a doctype (`test_<doctype>.py`). Use `frappe.tests.IntegrationTestCase` (v16). Always run tests on **`hrtest.localhost`**, never on the demo site `hr.localhost`, because upstream `before_tests` creates `_Test Company` fixtures.
 
 ## Specs and the build queue
 

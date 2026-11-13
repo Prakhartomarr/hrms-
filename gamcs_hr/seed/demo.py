@@ -6,6 +6,7 @@ Every step looks its record up by a natural key first and only creates what is
 missing, so it is safe to re-run. Nothing here is used in production code paths.
 """
 
+import os
 import random
 
 import frappe
@@ -333,6 +334,7 @@ def ensure_user_for(emp):
 	"""Department heads get a desk user so approval flows can be demoed."""
 	e = frappe.db.get_value("Employee", emp, ["user_id", "company_email", "first_name", "last_name"], as_dict=1)
 	if e.user_id:
+		set_demo_password(e.user_id)
 		return e.user_id
 	if not frappe.db.exists("User", e.company_email):
 		u = frappe.get_doc(
@@ -348,7 +350,17 @@ def ensure_user_for(emp):
 		u.flags.no_welcome_mail = True
 		u.insert(ignore_permissions=True)
 	frappe.db.set_value("Employee", emp, "user_id", e.company_email)
+	set_demo_password(e.company_email)
 	return e.company_email
+
+
+def set_demo_password(user):
+	"""Dev-only login so /hrms can be demoed as an employee. Value comes from ~/hrms/.env."""
+	password = os.environ.get("DEMO_PASSWORD") or os.environ.get("ADMIN_PASSWORD")
+	if password:
+		from frappe.utils.password import update_password
+
+		update_password(user, password)
 
 
 def salary_for(designation, rng):
