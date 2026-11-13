@@ -1,0 +1,52 @@
+# Local development stack for gamcs_hr (compose project "hrms-dev").
+# Same shape as the GAMCS CRM dev setup: the bench lives on the host at ~/hrms-bench
+# and is bind-mounted, so it survives container recreation. This repo is mounted
+# on top at apps/gamcs_hr so edits are live.
+# Ports: web 8200, socketio 9200 (8000/9100/8080/5173/4001/9000 belong to other projects).
+name: hrms-dev
+services:
+  mariadb:
+    image: mariadb:10.11
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
+      - --skip-innodb-read-only-compressed
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?run infra/dev/setup.sh to create .env}
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  redis:
+    image: redis:alpine
+    volumes:
+      - redis-data:/data
+
+  bench:
+    image: frappe/bench:latest
+    command: bash /home/frappe/frappe-bench/apps/gamcs_hr/infra/dev/init.sh
+    environment:
+      - SHELL=/bin/bash
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:?run infra/dev/setup.sh to create .env}
+      - DB_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+    working_dir: /home/frappe
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - ${HRMS_BENCH:-${HOME}/hrms-bench}:/home/frappe/frappe-bench
+      - ../..:/home/frappe/frappe-bench/apps/gamcs_hr
+    ports:
+      - 8200:8200
+      - 9200:9200
+
+volumes:
+  mariadb-data:
+  redis-data:
