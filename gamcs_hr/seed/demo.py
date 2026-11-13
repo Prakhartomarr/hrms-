@@ -61,7 +61,8 @@ LAST_NAMES = (
 ).split()
 
 
-def run():
+def run(commit=True):
+	"""commit=False lets tests build the data inside their own (rolled back) transaction."""
 	frappe.flags.mute_emails = True
 	ensure_setup_complete()
 	ensure_company_basics()
@@ -72,7 +73,8 @@ def run():
 	ensure_shift_assignments(employees)
 	ensure_leave_setup(employees)
 	ensure_payroll(employees)
-	frappe.db.commit()
+	if commit:
+		frappe.db.commit()
 	summary = {
 		"company": COMPANY,
 		"employees": frappe.db.count("Employee", {"company": COMPANY}),
@@ -124,18 +126,33 @@ def ensure_setup_complete():
 			"setup_demo": 0,
 		}
 	)
-	frappe.db.commit()
 	if not frappe.db.exists("Company", COMPANY):
 		frappe.throw(f"Setup wizard did not create {COMPANY}; check the error log")
 	ensure_fiscal_year()
 
 
 def ensure_fiscal_year():
-	name = "2026-2027"
-	if frappe.db.get_value("Fiscal Year", {"year_start_date": FY_START}):
+	"""Apr-Mar fiscal year scoped to our company (a company row avoids clashing with
+	calendar-year fiscal years other companies may have, e.g. upstream test fixtures)."""
+	fy = frappe.db.get_value(
+		"Fiscal Year",
+		{"year_start_date": FY_START, "year_end_date": FY_END},
+		"name",
+	)
+	if fy:
+		doc = frappe.get_doc("Fiscal Year", fy)
+		if doc.companies and not any(c.company == COMPANY for c in doc.companies):
+			doc.append("companies", {"company": COMPANY})
+			doc.save()
 		return
 	frappe.get_doc(
-		{"doctype": "Fiscal Year", "year": name, "year_start_date": FY_START, "year_end_date": FY_END}
+		{
+			"doctype": "Fiscal Year",
+			"year": "2026-2027" if not frappe.db.exists("Fiscal Year", "2026-2027") else "2026-2027 DPL",
+			"year_start_date": FY_START,
+			"year_end_date": FY_END,
+			"companies": [{"company": COMPANY}],
+		}
 	).insert()
 
 
@@ -180,6 +197,22 @@ def ensure_holiday_list():
 				hl.append("holidays", {"holiday_date": date, "description": desc, "weekly_off": 0})
 		hl.insert()
 	frappe.db.set_value("Company", COMPANY, "default_holiday_list", HOLIDAY_LIST)
+	# hrms v16 resolves holidays through Holiday List Assignment (employee, else company)
+	if not frappe.db.exists(
+		"Holiday List Assignment",
+		{"applicable_for": "Company", "assigned_to": COMPANY, "holiday_list": HOLIDAY_LIST, "docstatus": 1},
+	):
+		hla = frappe.get_doc(
+			{
+				"doctype": "Holiday List Assignment",
+				"applicable_for": "Company",
+				"assigned_to": COMPANY,
+				"holiday_list": HOLIDAY_LIST,
+				"from_date": "2026-01-01",
+			}
+		)
+		hla.insert()
+		hla.submit()
 
 
 def ensure_branches():
@@ -483,6 +516,7 @@ def ensure_payroll(employees):
 			frappe.get_doc({"doctype": "Salary Component", "salary_component": name, **values}).insert()
 
 	ensure_tax_slab()
+	ensure_payroll_period()
 
 	ss = frappe.db.get_value("Salary Structure", {"name": SALARY_STRUCTURE, "docstatus": 1})
 	if not ss:
@@ -535,6 +569,22 @@ def ensure_payroll(employees):
 		ssa.submit()
 
 
+def ensure_payroll_period():
+	"""hrms computes TDS (variable_based_on_taxable_salary) per Payroll Period."""
+	if frappe.db.exists("Payroll Period", {"company": COMPANY, "start_date": FY_START}):
+		return
+	frappe.get_doc(
+		{
+			"doctype": "Payroll Period",
+			"name": "FY 2026-27 DPL",
+			"__newname": "FY 2026-27 DPL",
+			"company": COMPANY,
+			"start_date": FY_START,
+			"end_date": FY_END,
+		}
+	).insert()
+
+
 def ensure_tax_slab():
 	"""New tax regime as announced for FY 2025-26 and carried into FY 2026-27.
 
@@ -542,17 +592,25 @@ def ensure_tax_slab():
 	Standard deduction 75,000; section 87A rebate makes tax nil up to 12L taxable income
 	(tax_relief_limit, with marginal relief handled by hrms); 4% health and education cess.
 	"""
-	if frappe.db.exists("Income Tax Slab", {"name": TAX_SLAB, "docstatus": 1}):
-		return
+	# hrms treats both ends of a slab as inclusive, so each band starts one rupee after
+	# the previous one ends (4,00,001 not 4,00,000); overlapping bounds overcharge Rs 1 x rate.
 	bands = [
 		(0, 400000, 0),
-		(400000, 800000, 5),
-		(800000, 1200000, 10),
-		(1200000, 1600000, 15),
-		(1600000, 2000000, 20),
-		(2000000, 2400000, 25),
-		(2400000, 0, 30),
+		(400001, 800000, 5),
+		(800001, 1200000, 10),
+		(1200001, 1600000, 15),
+		(1600001, 2000000, 20),
+		(2000001, 2400000, 25),
+		(2400001, 0, 30),
 	]
+	if frappe.db.exists("Income Tax Slab", {"name": TAX_SLAB, "docstatus": 1}):
+		# repair slabs seeded before the one-rupee fix (submitted, so update rows in place)
+		for row in frappe.get_all(
+			"Taxable Salary Slab", {"parent": TAX_SLAB}, ["name", "from_amount"]
+		):
+			if row.from_amount and row.from_amount % 100000 == 0:
+				frappe.db.set_value("Taxable Salary Slab", row.name, "from_amount", row.from_amount + 1)
+		return
 	doc = frappe.get_doc(
 		{
 			"doctype": "Income Tax Slab",

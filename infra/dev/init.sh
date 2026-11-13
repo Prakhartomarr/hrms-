@@ -39,6 +39,11 @@ if [ ! -f sites/.gamcs_hr_built ]; then
 	touch sites/.gamcs_hr_built
 fi
 
+# Chromium for v16 PDF printing (salary slips, emails). frappe downloads it lazily but
+# leaves headless_shell non-executable on the first download, so fetch + chmod up front.
+[ -f chromium/chrome-linux/headless_shell ] || bench setup-chrome || true
+[ -f chromium/chrome-linux/headless_shell ] && chmod +x chromium/chrome-linux/headless_shell
+
 if [ ! -d "sites/$S" ]; then
 	bench new-site "$S" --force --mariadb-root-password "$DB_ROOT_PASSWORD" \
 		--admin-password "$ADMIN_PASSWORD" --mariadb-user-host-login-scope='%'

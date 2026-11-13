@@ -48,7 +48,7 @@ infra/dev/hr.sh reset              # drop + recreate site, reinstall apps, resee
 infra/dev/hr.sh shell              # shell in the bench container
 ```
 
-Tests: put them in `gamcs_hr/tests/` or next to a doctype (`test_<doctype>.py`). Use `frappe.tests.IntegrationTestCase` (v16). Always run tests on **`hrtest.localhost`**, never on the demo site `hr.localhost`, because upstream `before_tests` creates `_Test Company` fixtures.
+Tests: put them in `gamcs_hr/tests/` or next to a doctype (`test_<doctype>.py`). Use `frappe.tests.IntegrationTestCase` (v16). Always run tests on **`hrtest.localhost`**, never on the demo site `hr.localhost`, because upstream `before_tests` creates `_Test Company` fixtures. The test site deliberately leaves out india_compliance, whose GST validation rejects ERPNext's test items. Any gamcs_hr code that depends on india_compliance must import it lazily, and its tests must skip when it isn't installed.
 
 ## Specs and the build queue
 

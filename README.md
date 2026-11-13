@@ -91,10 +91,10 @@ infra/dev/hr.sh nuke        # remove containers, volumes and ~/hrms-bench (asks 
 
 ## Running tests
 
-Tests run on a separate throwaway site, **`hrtest.localhost`**, so upstream fixtures (`_Test Company` and so on) never pollute the demo site.
+Tests run on a separate throwaway site, **`hrtest.localhost`**, so upstream fixtures (`_Test Company` and so on) never pollute the demo site. The test site has frappe, erpnext, hrms and gamcs_hr, but **not india_compliance**: ERPNext's test fixtures fail its GST validation, and upstream hrms CI also runs without it.
 
 ```bash
-infra/dev/hr.sh test-site                    # once: create hrtest.localhost with all apps, allow_tests on
+infra/dev/hr.sh test-site                    # once: (re)create hrtest.localhost, allow_tests on
 infra/dev/hr.sh test                         # gamcs_hr tests (exact-value payroll checks)
 infra/dev/hr.sh upstream-test hrms.hr.doctype.leave_application.test_leave_application
 ```

@@ -65,11 +65,17 @@ class TestDemoPayroll(IntegrationTestCase):
 	@classmethod
 	def setUpClass(cls):
 		super().setUpClass()
-		demo.run()
+		demo.run(commit=False)  # never leak demo data into the shared test site
+
+	@classmethod
+	def tearDownClass(cls):
+		frappe.db.rollback()
+		super().tearDownClass()
 
 	def test_below_esi_ceiling(self):
 		slip, a = slip_amounts(make_employee("TST-PAY-20K", 20000))
-		self.assertEqual(slip.payment_days, 30)
+		# v16 excludes holidays (4 Sundays in April 2026) from working days by default
+		self.assertEqual(slip.payment_days, slip.total_working_days)
 		self.assertEqual((a["B"], a["HRA"], a["SA"]), (10000, 4000, 6000))
 		self.assertEqual(slip.gross_pay, 20000)
 		self.assertEqual(a["PF"], 1200)  # 12% of basic 10,000
