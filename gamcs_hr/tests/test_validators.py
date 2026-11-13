@@ -17,7 +17,8 @@ class TestDiscovery(UnitTestCase):
 
 	def test_rules_sorted_by_order_then_name_and_helpers_skipped(self):
 		self.assertEqual(
-			[r.name.rsplit(".", 1)[1] for r in discover(PKG)], ["c_note_only", "a_first", "b_second", "d_soft"]
+			[r.name.rsplit(".", 1)[1] for r in discover(PKG)],
+			["c_note_only", "a_first", "b_second", "d_soft"],
 		)
 
 	def test_doctype_filter(self):
@@ -58,7 +59,9 @@ class TestPipeline(IntegrationTestCase):
 	def test_soft_violation_is_recorded_not_raised(self):
 		doc = self.make("soft")
 		doc.validate()
-		self.assertEqual(doc.flags.gamcs_violations, [{"code": "soft_rule", "message": "Allowed, but flagged"}])
+		self.assertEqual(
+			doc.flags.gamcs_violations, [{"code": "soft_rule", "message": "Allowed, but flagged"}]
+		)
 
 	def test_skip_flag(self):
 		doc = self.make("reject me")

@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - name: Install linters (pinned)
+        run: python -m pip install ruff==0.14.5 pyyaml==6.0.3
+      - name: ruff check
+        run: ruff check .
+      - name: ruff format
+        run: ruff format --check .
+      - name: Compile
+        run: python -m compileall -q gamcs_hr
+      - name: YAML parses
+        run: |
+          python - <<'PY'
+          import pathlib, sys, yaml
+          files = [*pathlib.Path(".github").rglob("*.yml"), *pathlib.Path("docker").rglob("*.yml"),
+                   *pathlib.Path("infra").rglob("*.yml")]
+          for f in files:
+              yaml.safe_load(f.read_text())
+              print("ok", f)
+          sys.exit(0 if files else 1)
+          PY
+      - name: Shell scripts parse
+        run: for f in infra/dev/*.sh docker/ci/*.sh; do bash -n "$f"; done
+      - name: No secrets or local config committed
+        run: |
+          bad=$(git ls-files | grep -E '(^|/)(\.env|site_config\.json|common_site_config\.json)$|\.(sql|sql\.gz|key|pem)$' || true)
+          if [ -n "$bad" ]; then echo "Remove from the repo: $bad"; exit 1; fi
+
+  tests:
+    name: gamcs_hr tests (bench in Docker)
+    runs-on: ubuntu-24.04
+    needs: lint
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate throwaway passwords
+        run: |
+          db=$(openssl rand -hex 16); admin=$(openssl rand -hex 16)
+          echo "::add-mask::$db"; echo "::add-mask::$admin"
+          echo "DB_ROOT_PASSWORD=$db" >> "$GITHUB_ENV"
+          echo "ADMIN_PASSWORD=$admin" >> "$GITHUB_ENV"
+      - name: Start database and cache
+        run: >
+          docker compose --env-file docker/ci/versions.env -f docker/ci/docker-compose.yml
+          up -d --wait mariadb redis
+      - name: Build bench at pinned versions and run tests
+        run: >
+          docker compose --env-file docker/ci/versions.env -f docker/ci/docker-compose.yml
+          run --rm bench bash /src/docker/ci/run-tests.sh
+      - name: Logs on failure
+        if: failure()
+        run: docker compose --env-file docker/ci/versions.env -f docker/ci/docker-compose.yml logs --tail=200
+      - name: Tear down
+        if: always()
+        run: docker compose --env-file docker/ci/versions.env -f docker/ci/docker-compose.yml down -v

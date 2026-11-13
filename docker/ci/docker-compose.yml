@@ -1,0 +1,43 @@
+# Throwaway stack for CI: builds a fresh bench at the pinned versions and runs the
+# gamcs_hr tests. Not for development (use infra/dev). Nothing is published on host ports.
+# Usage (from the repo root):
+#   docker compose --env-file docker/ci/versions.env -f docker/ci/docker-compose.yml \
+#     run --rm bench bash /src/docker/ci/run-tests.sh
+# Needs DB_ROOT_PASSWORD and ADMIN_PASSWORD in the environment (CI generates them).
+name: gamcs-hr-ci
+services:
+  mariadb:
+    image: ${MARIADB_IMAGE:?}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
+      - --skip-innodb-read-only-compressed
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?}
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+    tmpfs:
+      - /var/lib/mysql
+
+  redis:
+    image: ${REDIS_IMAGE:?}
+
+  bench:
+    image: ${BENCH_IMAGE:?}
+    environment:
+      DB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?}
+      FRAPPE_REF: ${FRAPPE_REF:?}
+      ERPNEXT_REF: ${ERPNEXT_REF:?}
+      HRMS_REF: ${HRMS_REF:?}
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - ../..:/src:ro

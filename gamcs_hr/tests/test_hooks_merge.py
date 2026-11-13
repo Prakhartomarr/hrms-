@@ -42,7 +42,9 @@ class TestMergeSemantics(UnitTestCase):
 		)
 
 	def test_lists_concatenate_without_duplicates(self):
-		merged = merge_hooks({"scheduler_events": {"daily": ["a", "b"]}}, [("m", {"scheduler_events": {"daily": ["b", "c"]}})])
+		merged = merge_hooks(
+			{"scheduler_events": {"daily": ["a", "b"]}}, [("m", {"scheduler_events": {"daily": ["b", "c"]}})]
+		)
 		self.assertEqual(merged["scheduler_events"]["daily"], ["a", "b", "c"])
 
 	def test_strings_at_top_level_become_lists(self):
@@ -50,7 +52,10 @@ class TestMergeSemantics(UnitTestCase):
 		self.assertEqual(merged["app_include_js"], ["a.js", "b.js"])
 
 	def test_same_override_twice_is_allowed(self):
-		parts = [("one", {"extend_doctype_class": {"ToDo": "x.A"}}), ("two", {"extend_doctype_class": {"ToDo": "x.A"}})]
+		parts = [
+			("one", {"extend_doctype_class": {"ToDo": "x.A"}}),
+			("two", {"extend_doctype_class": {"ToDo": "x.A"}}),
+		]
 		self.assertEqual(merge_hooks({}, parts)["extend_doctype_class"], {"ToDo": "x.A"})
 
 	def test_two_overrides_for_one_doctype_conflict(self):
@@ -60,7 +65,10 @@ class TestMergeSemantics(UnitTestCase):
 				merge_hooks({}, parts)
 
 	def test_different_doctypes_in_single_value_hook_merge(self):
-		parts = [("one", {"extend_doctype_class": {"ToDo": "x.A"}}), ("two", {"extend_doctype_class": {"Note": "x.B"}})]
+		parts = [
+			("one", {"extend_doctype_class": {"ToDo": "x.A"}}),
+			("two", {"extend_doctype_class": {"Note": "x.B"}}),
+		]
 		self.assertEqual(merge_hooks({}, parts)["extend_doctype_class"], {"ToDo": "x.A", "Note": "x.B"})
 
 	def test_reserved_hooks_cannot_be_set_by_modules(self):
@@ -74,15 +82,21 @@ class TestMergeSemantics(UnitTestCase):
 
 	def test_conflicting_non_string_scalars(self):
 		with self.assertRaises(HookConflictError):
-			merge_hooks({"export_python_type_annotations": True}, [("m", {"export_python_type_annotations": False})])
-		merged = merge_hooks({"export_python_type_annotations": True}, [("m", {"export_python_type_annotations": True})])
+			merge_hooks(
+				{"export_python_type_annotations": True}, [("m", {"export_python_type_annotations": False})]
+			)
+		merged = merge_hooks(
+			{"export_python_type_annotations": True}, [("m", {"export_python_type_annotations": True})]
+		)
 		self.assertIs(merged["export_python_type_annotations"], True)
 
 
 class TestModuleLoading(UnitTestCase):
 	def test_load_parts_skips_missing_modules_and_ignores_non_hooks(self):
 		parts = load_parts(FIXTURES, ["alpha", "does_not_exist", "beta"])
-		self.assertEqual([src for src, _ in parts], [f"{FIXTURES}.alpha.hooks_part", f"{FIXTURES}.beta.hooks_part"])
+		self.assertEqual(
+			[src for src, _ in parts], [f"{FIXTURES}.alpha.hooks_part", f"{FIXTURES}.beta.hooks_part"]
+		)
 		beta = parts[1][1]
 		self.assertNotIn("helper", beta)
 		self.assertNotIn("_unused", beta)
@@ -93,7 +107,9 @@ class TestModuleLoading(UnitTestCase):
 			load_parts(FIXTURES, ["badimport"])
 
 	def test_build_hooks_from_fixture_modules(self):
-		merged = build_hooks({"app_name": "x", "doc_events": {"*": {"on_update": "base.any"}}}, FIXTURES, ["alpha", "beta"])
+		merged = build_hooks(
+			{"app_name": "x", "doc_events": {"*": {"on_update": "base.any"}}}, FIXTURES, ["alpha", "beta"]
+		)
 		self.assertEqual(
 			merged["doc_events"],
 			{
@@ -103,7 +119,8 @@ class TestModuleLoading(UnitTestCase):
 			},
 		)
 		self.assertEqual(
-			merged["scheduler_events"], {"daily": ["alpha.daily", "beta.daily"], "cron": {"0 1 * * *": ["beta.cron"]}}
+			merged["scheduler_events"],
+			{"daily": ["alpha.daily", "beta.daily"], "cron": {"0 1 * * *": ["beta.cron"]}},
 		)
 		self.assertEqual(merged["app_include_js"], ["alpha.bundle.js", "beta.bundle.js"])
 

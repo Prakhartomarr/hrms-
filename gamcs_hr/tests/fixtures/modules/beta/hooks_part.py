@@ -1,4 +1,4 @@
-from gamcs_hr.framework import hooks_merge as _unused  # modules and functions are ignored
+from gamcs_hr.framework import hooks_merge as _unused  # noqa: F401  (modules and functions are ignored)
 
 
 def helper():  # functions are not hooks

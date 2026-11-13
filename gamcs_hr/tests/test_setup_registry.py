@@ -15,7 +15,16 @@ class TestCollect(IntegrationTestCase):
 		plan = collect(["alpha", "missing", "beta"], package=FIXTURES)
 		self.assertEqual(
 			plan.custom_fields,
-			{"ToDo": [{"module": "GAMCS HR", "fieldname": "gamcs_test_ref", "fieldtype": "Data", "label": "Test ref"}]},
+			{
+				"ToDo": [
+					{
+						"module": "GAMCS HR",
+						"fieldname": "gamcs_test_ref",
+						"fieldtype": "Data",
+						"label": "Test ref",
+					}
+				]
+			},
 		)
 		self.assertEqual(
 			plan.property_setters,
@@ -64,9 +73,13 @@ class TestSync(IntegrationTestCase):
 class TestRealModules(IntegrationTestCase):
 	def test_common_module_field_exists_and_resync_is_a_no_op(self):
 		setup_registry.run()  # what after_migrate does
-		name = frappe.db.get_value("Custom Field", {"dt": "Employee", "fieldname": "gamcs_legacy_employee_id"})
+		name = frappe.db.get_value(
+			"Custom Field", {"dt": "Employee", "fieldname": "gamcs_legacy_employee_id"}
+		)
 		self.assertTrue(name)
-		before = frappe.db.get_value("Custom Field", name, ["module", "modified", "insert_after"], as_dict=True)
+		before = frappe.db.get_value(
+			"Custom Field", name, ["module", "modified", "insert_after"], as_dict=True
+		)
 		self.assertEqual((before.module, before.insert_after), ("GAMCS HR", "employee_number"))
 		self.assertTrue(frappe.db.has_column("Employee", "gamcs_legacy_employee_id"))
 
@@ -75,7 +88,8 @@ class TestRealModules(IntegrationTestCase):
 
 	def test_after_migrate_is_registered(self):
 		self.assertIn(
-			"gamcs_hr.framework.setup_registry.after_migrate", frappe.get_hooks("after_migrate", app_name="gamcs_hr")
+			"gamcs_hr.framework.setup_registry.after_migrate",
+			frappe.get_hooks("after_migrate", app_name="gamcs_hr"),
 		)
 
 	def test_common_employee_handler(self):
