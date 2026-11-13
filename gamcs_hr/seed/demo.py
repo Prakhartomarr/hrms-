@@ -157,9 +157,11 @@ def ensure_fiscal_year():
 
 
 def ensure_company_basics():
-	for d in {h for h, _m, _n in DEPARTMENTS.values()} | {m for _h, m, _n in DEPARTMENTS.values()} | {
-		"Chief Executive Officer"
-	}:
+	for d in (
+		{h for h, _m, _n in DEPARTMENTS.values()}
+		| {m for _h, m, _n in DEPARTMENTS.values()}
+		| {"Chief Executive Officer"}
+	):
 		if not frappe.db.exists("Designation", d):
 			frappe.get_doc({"doctype": "Designation", "designation_name": d}).insert()
 	for dept in DEPARTMENTS:
@@ -365,7 +367,9 @@ def ensure_employees():
 
 def ensure_user_for(emp):
 	"""Department heads get a desk user so approval flows can be demoed."""
-	e = frappe.db.get_value("Employee", emp, ["user_id", "company_email", "first_name", "last_name"], as_dict=1)
+	e = frappe.db.get_value(
+		"Employee", emp, ["user_id", "company_email", "first_name", "last_name"], as_dict=1
+	)
 	if e.user_id:
 		set_demo_password(e.user_id)
 		return e.user_id
@@ -418,7 +422,12 @@ LEAVE_TYPES = {
 	"Sick Leave": (12, {"include_holiday": 0}),
 	"Privilege Leave": (
 		18,
-		{"is_carry_forward": 1, "maximum_carry_forwarded_leaves": 30, "allow_encashment": 1, "is_earned_leave": 0},
+		{
+			"is_carry_forward": 1,
+			"maximum_carry_forwarded_leaves": 30,
+			"allow_encashment": 1,
+			"is_earned_leave": 0,
+		},
 	),
 	"Leave Without Pay": (0, {"is_lwp": 1}),
 }
@@ -459,7 +468,9 @@ def ensure_leave_setup(employees):
 		policy = lp.name
 
 	for emp in employees:
-		if frappe.db.exists("Leave Policy Assignment", {"employee": emp, "leave_policy": policy, "docstatus": 1}):
+		if frappe.db.exists(
+			"Leave Policy Assignment", {"employee": emp, "leave_policy": policy, "docstatus": 1}
+		):
 			continue
 		lpa = frappe.get_doc(
 			{
@@ -605,9 +616,7 @@ def ensure_tax_slab():
 	]
 	if frappe.db.exists("Income Tax Slab", {"name": TAX_SLAB, "docstatus": 1}):
 		# repair slabs seeded before the one-rupee fix (submitted, so update rows in place)
-		for row in frappe.get_all(
-			"Taxable Salary Slab", {"parent": TAX_SLAB}, ["name", "from_amount"]
-		):
+		for row in frappe.get_all("Taxable Salary Slab", {"parent": TAX_SLAB}, ["name", "from_amount"]):
 			if row.from_amount and row.from_amount % 100000 == 0:
 				frappe.db.set_value("Taxable Salary Slab", row.name, "from_amount", row.from_amount + 1)
 		return
