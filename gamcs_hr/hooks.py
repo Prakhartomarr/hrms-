@@ -6,35 +6,30 @@ app_email = "dev@example.com"
 app_license = "GPL-3.0"
 
 # Installed after these; never edit them, extend them from here (see CLAUDE.md).
+# Keep this a literal: bench reads it from the file without importing it.
 required_apps = ["frappe/erpnext", "frappe/hrms"]
 
 # ---------------------------------------------------------------------------
-# Extension points. Add entries here rather than editing upstream apps.
+# Shared entry points. Do not add feature hooks to this file.
+#
+# Feature hooks (doc_events, extend_doctype_class, scheduler_events, doctype_js,
+# permission_query_conditions, ...) go in gamcs_hr/<module>/hooks_part.py and are
+# merged below in the order of gamcs_hr/modules_order.py. Merge rules: see
+# gamcs_hr/framework/hooks_merge.py and docs/conventions.md.
 # ---------------------------------------------------------------------------
 
-# Assets on desk / website
-# app_include_css = "/assets/gamcs_hr/css/gamcs_hr.css"
-# app_include_js = "/assets/gamcs_hr/js/gamcs_hr.js"
+# Custom fields and property setters of every module (gamcs_hr/<module>/setup.py),
+# synced on install and on every migrate.
+after_install = "gamcs_hr.framework.setup_registry.after_install"
+after_migrate = "gamcs_hr.framework.setup_registry.after_migrate"
 
-# Per-doctype client scripts shipped in the app
-# doctype_js = {"Employee": "public/js/employee.js"}
 
-# Server-side event handlers, additive to upstream's own
-# doc_events = {
-# 	"Leave Application": {"validate": "gamcs_hr.leave.validate"},
-# }
+def _merge_module_hooks():
+	from gamcs_hr.framework.hooks_merge import build_hooks
+	from gamcs_hr.modules_order import MODULES
 
-# Replace an upstream controller class with a subclass that lives in gamcs_hr
-# override_doctype_class = {"Salary Slip": "gamcs_hr.overrides.salary_slip.GAMCSSalarySlip"}
+	base = {k: v for k, v in globals().items() if not k.startswith("_")}
+	globals().update(build_hooks(base, "gamcs_hr", MODULES))
 
-# Replace an upstream whitelisted method
-# override_whitelisted_methods = {}
 
-# Custom fields / property setters exported with `bench --site hr.localhost export-fixtures`
-fixtures = [
-	{"dt": "Custom Field", "filters": [["module", "=", "GAMCS HR"]]},
-	{"dt": "Property Setter", "filters": [["module", "=", "GAMCS HR"]]},
-	{"dt": "Client Script", "filters": [["module", "=", "GAMCS HR"]]},
-]
-
-# scheduler_events = {"daily": ["gamcs_hr.tasks.daily"]}
+_merge_module_hooks()
