@@ -30,7 +30,7 @@ frappe (framework, MIT)
 ```
 
 - The upstream apps are **untouched**. They are cloned at pinned `version-16` branches into a bench outside this repo.
-- Every customisation lives in `gamcs_hr`. We extend upstream through `hooks.py` (`doc_events`, `override_doctype_class`, `override_whitelisted_methods`, `doctype_js`), through fixtures (custom fields, property setters, client scripts), through our own doctypes, and through our own pages.
+- Every customisation lives in `gamcs_hr`. We extend upstream through hooks (each feature module has its own `hooks_part.py`, merged by `hooks.py`), through custom fields and property setters declared per module in `setup.py`, through extension classes with pluggable validators, through our own doctypes, and through our own pages. See [docs/conventions.md](docs/conventions.md).
 - Version choice and its rationale: [docs/decisions/0001-frappe-v16-stack.md](docs/decisions/0001-frappe-v16-stack.md).
 
 ## Prerequisites
@@ -106,14 +106,18 @@ Baseline upstream results are recorded in [docs/baseline-tests.md](docs/baseline
 ## Repo layout
 
 ```
-gamcs_hr/              the Frappe app (hooks.py, modules.txt, patches.txt)
+gamcs_hr/              the Frappe app (hooks.py, modules_order.py, modules.txt, patches.txt)
+  framework/           hooks merger, setup registry, validator pipeline
+  common/              shared helpers (first feature module)
+  <module>/            feature modules: hooks_part.py, setup.py, validators/, ...
   gamcs_hr/            module "GAMCS HR": our doctypes go here
-  fixtures/            exported custom fields, property setters, client scripts
   seed/demo.py         idempotent demo data
   tests/               app tests
 infra/dev/             docker-compose (project hrms-dev), env.sh, setup.sh, init.sh, hr.sh
+docker/ci/             pinned bench for CI (.github/workflows/ci.yml)
 docs/
-  build-queue.md       planned work
+  build-queue.md       ordered task list (waves, owners, dependencies)
+  conventions.md       how modules, hooks, customisations, validators and tests fit together
   decisions/           ADRs
   baseline-tests.md    upstream test baseline
 CLAUDE.md / AGENTS.md  rules for coding agents

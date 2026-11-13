@@ -50,3 +50,7 @@ All cases use April 2026, the first period of FY 2026-27, with the "Demo India M
 TDS for ₹2,00,000 a month: ₹24,00,000 minus the ₹75,000 standard deduction is ₹23,25,000 taxable. Tax is 20,000 + 40,000 + 60,000 + 80,000 + 81,250 = ₹2,81,250, plus 4% cess = ₹2,92,500 a year, or ₹24,375 a month.
 
 hrms treats both slab bounds as inclusive. Slabs that meet at the same figure (4,00,000 to 8,00,000 followed by 8,00,000 to 12,00,000) overcharge by ₹1 times the rate at each boundary, which came to ₹0.78 a year here. The seed therefore starts each band at x00,001.
+
+## Re-run after T01 (framework), 2026-11-13
+
+Same commits as above, on hrtest.localhost after `migrate`: leave application 44/44, attendance 14/14, salary slip 65/65, and gamcs_hr 36/36 (21 unit + 15 integration: the 3 payroll checks plus 33 framework tests). Upstream checkouts unchanged.

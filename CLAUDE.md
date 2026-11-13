@@ -4,15 +4,15 @@ AGENTS.md points here. This file is the single source.
 
 ## What this is
 
-`gamcs_hr` is a custom Frappe app that turns Frappe HR (frappe/hrms) + ERPNext v16 + India Compliance into a full HRMS for Indian and Middle East SMBs. Status: the foundation is in place (dev infra, demo seed, upstream test baseline). Feature work is queued in `docs/build-queue.md`.
+`gamcs_hr` is a custom Frappe app that turns Frappe HR (frappe/hrms) + ERPNext v16 + India Compliance into a full HRMS for Indian and Middle East SMBs. Status: the foundation is in place (dev infra, demo seed, upstream test baseline). Feature work is queued in `docs/build-queue.md`. **Read `docs/conventions.md` before writing code**: module layout, `hooks_part.py`, `setup.py`, validators, tests, frontend routes.
 
 The earlier from-scratch TypeScript attempt is archived on branch `archive/ts-scaffold`. Never modify, rebase or delete that branch.
 
 ## Hard rules
 
 1. **Never edit upstream apps** (`frappe`, `erpnext`, `hrms`, `india_compliance` in `~/hrms-bench/apps/`). Their working trees must stay clean, and `git status` there must show nothing. Extend from `gamcs_hr` instead:
-   - `hooks.py`: `doc_events`, `override_doctype_class` (subclass the upstream controller), `override_whitelisted_methods`, `doctype_js` / `doctype_list_js`, `scheduler_events`, `permission_query_conditions`, `has_permission`
-   - **Custom Fields / Property Setters** created with `module = "GAMCS HR"` and exported via `bench --site hr.localhost export-fixtures --app gamcs_hr` into `gamcs_hr/fixtures/`
+   - **Hooks** in your module's `gamcs_hr/<module>/hooks_part.py`, never in `hooks.py` itself (it merges the parts in the order of `gamcs_hr/modules_order.py`): `doc_events`, `extend_doctype_class` (one extension class per upstream doctype, running auto-discovered validators), `override_whitelisted_methods`, `doctype_js` / `doctype_list_js`, `scheduler_events`, `permission_query_conditions`, `has_permission`. Use `override_doctype_class` only as a last resort.
+   - **Custom Fields / Property Setters** declared in `gamcs_hr/<module>/setup.py` (`CUSTOM_FIELDS`, `PROPERTY_SETTERS`). The setup registry creates them with `module = "GAMCS HR"` on install and every migrate. No exported fixture JSON.
    - **Client scripts** as files in `gamcs_hr/public/js/` wired through `doctype_js`, never as DB-only Client Script records
    - **New doctypes** in module `GAMCS HR` (`gamcs_hr/gamcs_hr/doctype/`), created in developer mode so the JSON lands in the repo
    - **Vue pages / portal pages** in `gamcs_hr` (`gamcs_hr/www/`, or a separate `frontend/` built into `gamcs_hr/public/`)
@@ -48,7 +48,7 @@ infra/dev/hr.sh reset              # drop + recreate site, reinstall apps, resee
 infra/dev/hr.sh shell              # shell in the bench container
 ```
 
-Tests: put them in `gamcs_hr/tests/` or next to a doctype (`test_<doctype>.py`). Use `frappe.tests.IntegrationTestCase` (v16). Always run tests on **`hrtest.localhost`**, never on the demo site `hr.localhost`, because upstream `before_tests` creates `_Test Company` fixtures. The test site deliberately leaves out india_compliance, whose GST validation rejects ERPNext's test items. Any gamcs_hr code that depends on india_compliance must import it lazily, and its tests must skip when it isn't installed.
+Tests: put them in `gamcs_hr/tests/` or next to a doctype (`test_<doctype>.py`). Use `frappe.tests.IntegrationTestCase` (v16). Always run tests on **`hrtest.localhost`**, never on the demo site `hr.localhost`, because upstream `before_tests` creates `_Test Company` fixtures. The test site deliberately leaves out india_compliance, whose GST validation rejects ERPNext's test items. It also leaves out india_payroll (not installed anywhere yet; see `docs/decisions/0002-india-payroll-deferred.md`). Any gamcs_hr code that depends on india_compliance or india_payroll must import it lazily, and its tests must skip when it isn't installed. CI (`.github/workflows/ci.yml`) runs the gamcs_hr suite on a fresh bench at the versions pinned in `docker/ci/versions.env`.
 
 ## Specs and the build queue
 
