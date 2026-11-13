@@ -35,6 +35,7 @@ services:
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:?run infra/dev/setup.sh to create .env}
       - DB_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
       - DEMO_PASSWORD=${DEMO_PASSWORD:-}
+      - WITH_INDIA_PAYROLL=${WITH_INDIA_PAYROLL:-0}
     working_dir: /home/frappe
     depends_on:
       mariadb:

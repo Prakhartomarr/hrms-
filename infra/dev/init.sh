@@ -29,6 +29,15 @@ cd "$B"
 [ -d apps/hrms ] || bench get-app --skip-assets --branch "$BRANCH" hrms
 [ -d apps/india_compliance ] || bench get-app --skip-assets --branch "$BRANCH" https://github.com/resilient-tech/india-compliance
 
+# frappe/india-payroll is opt-in until build-queue task T56 moves the demo payroll onto it
+# (docs/decisions/0002-india-payroll-deferred.md). WITH_INDIA_PAYROLL=1 in ~/hrms/.env turns it on.
+INDIA_PAYROLL_REF=3321103d9fdc394d1c66692eb267416293d59a8e   # version-16, v16.1.0+, 2026-10-21
+if [ "${WITH_INDIA_PAYROLL:-0}" = 1 ] && [ ! -d apps/india_payroll ]; then
+	bench get-app --skip-assets --branch "$BRANCH" https://github.com/frappe/india-payroll
+	git -C apps/india_payroll fetch --depth 1 upstream "$INDIA_PAYROLL_REF"
+	git -C apps/india_payroll checkout -q "$INDIA_PAYROLL_REF"
+fi
+
 # gamcs_hr is this repo, bind-mounted at apps/gamcs_hr: editable install + register.
 # (bench init already lists it in apps.txt because the directory exists, but does not pip-install it.)
 env/bin/python -c "import gamcs_hr" 2>/dev/null || uv pip install --python env/bin/python -e apps/gamcs_hr
@@ -53,7 +62,9 @@ if [ ! -d "sites/$S" ]; then
 	bench --site "$S" set-config host_name "http://$S:8200"
 	bench use "$S"
 fi
-for app in erpnext hrms india_compliance gamcs_hr; do
+APPS="erpnext hrms india_compliance"
+[ "${WITH_INDIA_PAYROLL:-0}" = 1 ] && APPS="$APPS india_payroll"
+for app in $APPS gamcs_hr; do
 	bench --site "$S" list-apps | grep -q "^$app" || bench --site "$S" install-app "$app"
 done
 
