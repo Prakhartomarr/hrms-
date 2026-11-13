@@ -7,6 +7,7 @@ export HRMS_BENCH="${HRMS_BENCH:-$HOME/hrms-bench}"
 export COMPOSE_FILE="$HR_REPO/infra/dev/docker-compose.yml"
 export COMPOSE_PROJECT_NAME=hrms-dev
 export HR_SITE=hr.localhost
+export HR_TEST_SITE=hrtest.localhost
 if ! command -v docker >/dev/null 2>&1 && [ -x /Applications/Docker.app/Contents/Resources/bin/docker ]; then
 	export PATH="/Applications/Docker.app/Contents/Resources/bin:$PATH"
 	export DOCKER_HOST="unix://$HOME/.docker/run/docker.sock"

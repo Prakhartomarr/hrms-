@@ -15,7 +15,15 @@ case "$cmd" in
 	migrate) x bench --site "$HR_SITE" migrate ;;
 	build)   x bench build "$@" ;;
 	seed)    x bench --site "$HR_SITE" execute gamcs_hr.seed.demo.run ;;
-	test)    x bench --site "$HR_SITE" run-tests --app gamcs_hr "$@" ;;
+	test)    x bench --site "$HR_TEST_SITE" run-tests --app gamcs_hr "$@" ;;
+	upstream-test)  # e.g. hr.sh upstream-test hrms.hr.doctype.attendance.test_attendance
+		x bench --site "$HR_TEST_SITE" run-tests --module "$@" ;;
+	test-site)  # throwaway site for test runs, so hr.localhost demo data stays clean
+		x bench new-site "$HR_TEST_SITE" --force --mariadb-root-password "$DB_ROOT_PASSWORD" \
+			--admin-password "$ADMIN_PASSWORD" --mariadb-user-host-login-scope=% --install-app erpnext
+		for a in hrms india_compliance gamcs_hr; do x bench --site "$HR_TEST_SITE" install-app "$a"; done
+		x bench --site "$HR_TEST_SITE" set-config allow_tests 1
+		x bench --site "$HR_TEST_SITE" set-config mute_emails 1 ;;
 	restart) docker compose restart bench ;;
 	reset)
 		confirm "Drop site $HR_SITE and recreate it with fresh demo data?" || exit 1
@@ -31,7 +39,10 @@ case "$cmd" in
 usage: infra/dev/hr.sh <command>
   up | down | restart | ps | logs | shell
   bench <args>   any bench command inside the container
-  migrate | build [args] | seed | test [args]
+  migrate | build [args] | seed
+  test-site      create $HR_TEST_SITE (all apps, allow_tests) once
+  test [args]    gamcs_hr tests on $HR_TEST_SITE
+  upstream-test <module>   one upstream test module on $HR_TEST_SITE
   reset          drop + recreate site $HR_SITE (keeps bench)
   nuke           remove containers, volumes and $HRMS_BENCH
 USAGE

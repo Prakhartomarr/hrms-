@@ -29,11 +29,10 @@ cd "$B"
 [ -d apps/hrms ] || bench get-app --skip-assets --branch "$BRANCH" hrms
 [ -d apps/india_compliance ] || bench get-app --skip-assets --branch "$BRANCH" https://github.com/resilient-tech/india-compliance
 
-# gamcs_hr is this repo, bind-mounted at apps/gamcs_hr: editable install + register
-if ! grep -qx gamcs_hr sites/apps.txt; then
-	uv pip install --python env/bin/python -e apps/gamcs_hr
-	echo gamcs_hr >> sites/apps.txt
-fi
+# gamcs_hr is this repo, bind-mounted at apps/gamcs_hr: editable install + register.
+# (bench init already lists it in apps.txt because the directory exists, but does not pip-install it.)
+env/bin/python -c "import gamcs_hr" 2>/dev/null || uv pip install --python env/bin/python -e apps/gamcs_hr
+grep -qx gamcs_hr sites/apps.txt || echo gamcs_hr >> sites/apps.txt
 
 if [ ! -f sites/.gamcs_hr_built ]; then
 	bench build
