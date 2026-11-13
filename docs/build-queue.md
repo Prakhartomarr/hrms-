@@ -35,8 +35,8 @@ Status: `done`, `in progress`, or blank (not started). All paths are under `gamc
 | T06 | Policy engine: applicability rules and per-employee overrides, `resolve(employee, kind, date)` that also explains its answer; table-driven tests | `policy/` | T04 | A | |
 | T07 | Policy materialiser: derive leave policy, holiday list, shift and approver assignments from the rules, on Employee change and nightly; stamp the source of each derived record | `policy/materialise/` | T06 | A | |
 | T08 | Data-scope permissions: scope rule doctype, generic query conditions and `has_permission` (team scope via the Employee tree), extra permission types (approve, export sensitive, raise on behalf, override), role templates; permission matrix tests | `permissions/` | T04 | A | |
-| T09 | Audit: change tracking on key doctypes, audit trail registration, field change log report with masking | `audit/` | T01 | A | |
-| T10 | Versioned statutory packs and policy versions with a draft, verified, published workflow; lookups by kind, code and date | `packs/` | T01 | A | |
+| T09 | Audit: change tracking on key doctypes, audit trail registration, field change log report with masking | `audit/` | T01 | A | done |
+| T10 | Versioned statutory packs and policy versions with a draft, verified, published workflow; lookups by kind, code and date | `packs/` | T01 | A | done |
 
 T05, T06 and T08 can run in parallel after T04. T09 and T10 can run alongside T04.
 
