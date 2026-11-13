@@ -1,0 +1,22 @@
+{
+  "name": "@hrms/kernel",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Host runtime: discovers modules, builds the module context, enforces auth and the access guard on every route, and boots the api, worker and scheduler roles.",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "development": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": { "@hrms/contracts": "workspace:*", "@hrms/db": "workspace:*", "@hrms/domain": "workspace:*", "@hrms/module-sdk": "workspace:*", "@hrms/platform": "workspace:*", "@fastify/swagger": "9.9.2", "fastify": "5.12.5", "fastify-type-provider-zod": "6.1.0", "zod": "4.6.5" }
+}

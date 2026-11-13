@@ -1,0 +1,22 @@
+{
+  "name": "@hrms/module-sdk",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "defineModule() API: routes, jobs, schedules, migrations, event subscriptions, access resources and navigation for feature modules.",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "development": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": { "@hrms/contracts": "workspace:*", "@hrms/db": "workspace:*", "@hrms/platform": "workspace:*", "fastify": "5.12.5", "fastify-type-provider-zod": "6.1.0", "zod": "4.6.5" }
+}
