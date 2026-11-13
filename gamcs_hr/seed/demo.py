@@ -507,7 +507,8 @@ COMPONENTS = [
 ]
 
 
-def ensure_payroll(employees):
+def ensure_salary_components():
+	"""Upsert COMPONENTS. Also used by gamcs_hr.tests.factories."""
 	# upsert: the setup wizard already creates Basic, HRA, PF, PT and Income Tax with
 	# its own abbreviations and payment-days settings, so align them with ours.
 	for name, abbr, ctype, _f, _c, extra in COMPONENTS:
@@ -526,6 +527,9 @@ def ensure_payroll(employees):
 		else:
 			frappe.get_doc({"doctype": "Salary Component", "salary_component": name, **values}).insert()
 
+
+def ensure_payroll(employees):
+	ensure_salary_components()
 	ensure_tax_slab()
 	ensure_payroll_period()
 
