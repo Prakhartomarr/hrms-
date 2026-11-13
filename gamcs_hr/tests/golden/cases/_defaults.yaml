@@ -1,0 +1,31 @@
+# Assumptions every golden case shares unless the case says otherwise.
+# Money is integer paise. The runner reads `payroll_settings`; the rest documents
+# the rules the expected values were worked out under.
+
+tax_year: 2026-27              # Income-tax Act 2025, new regime unless a case says old
+pay_group:
+  STD:
+    basic: 50% of monthly CTC
+    hra: 50% of Basic in a metro, 40% elsewhere (the only exclusion)
+    employer_pf: 12% of min(code wages, PF ceiling), inside CTC
+    special: balancer, wage class "wages"
+code_wages: Basic + Special, plus the add-back when exclusions pass 50% of total pay
+pf_ceiling:
+  - {to: "2026-08-31", ceiling: 1500000}
+  - {from: "2026-09-01", to: "2026-09-16", ceiling: 1500000}
+  - {from: "2026-09-17", ceiling: 2500000}
+structure_versions: CTC structures restated from 2026-10-01 after the ceiling rise
+rounding:
+  earnings: per component, half-up to the rupee, on calendar-day proration
+  pf: employee, EPS, EDLI and admin each to the nearest rupee; employer EPF = employee - EPS
+  esi: 0.75% employee and 3.25% employer of code wages, each rounded up to the rupee
+  tds: taxable income and annual tax to Rs 10; monthly instalment half-up to the rupee
+pt: on earned gross; Maharashtra man unless a case says otherwise
+tds_projection: >-
+  year-to-date actual + this month + remaining months at the current full rate;
+  one-time items (bonus, arrears, corrections) carry their whole extra tax in the month paid
+
+# Applied by the runner before any salary slip is built (restored afterwards).
+payroll_settings:
+  include_holidays_in_total_working_days: 1   # proration on calendar days
+  payroll_based_on: Leave

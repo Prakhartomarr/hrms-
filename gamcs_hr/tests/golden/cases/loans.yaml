@@ -1,0 +1,52 @@
+# Golden payroll cases: employee loans.
+# Money is integer paise (100 = Rs 1). Keys ending in _days/_pct/_date and the
+# keys listed in loader.NON_MONEY are not money. A check with `pending` is reported
+# as skipped with its feature until that feature lands; then remove the mark.
+# Assumptions shared by every case: gamcs_hr/tests/golden/cases/_defaults.yaml.
+area: Employee loans
+cases:
+- id: G47
+  title: Loan of 1,00,000 at 9% on the reducing balance over 12 EMIs
+  tags: [loan emi]
+  ca_signoff: false
+  variants:
+  - name: main
+    scenario:
+      kind: loan_schedule
+      inputs: {principal: 10000000, annual_rate_pct: 9, emi_count: 12}
+    checks:
+      schedule:
+        pending: {feature: T74, reason: 'loan EMI schedule, last EMI clears the balance'}
+        expect:
+          emi: 874500
+          total_interest: 494300
+          rows:
+          - {n: 1, emi: 874500, interest: 75000, principal: 799500, balance: 9200500}
+          - {n: 2, emi: 874500, interest: 69000, principal: 805500, balance: 8395000}
+          - {n: 11, emi: 874500, interest: 13000, principal: 861500, balance: 868300}
+          - {n: 12, emi: 874800, interest: 6500, principal: 868300, balance: 0}
+- id: G48
+  title: Interest-free loan perquisite (benchmark 10% as a fixture value)
+  tags: [loan perquisite]
+  ca_signoff: false
+  variants:
+  - name: at_threshold
+    scenario:
+      kind: loan_perquisite
+      inputs: {aggregate: 20000000, max_outstanding: 20000000, interest_pct: 0, benchmark_pct: 10}
+    checks:
+      perquisite:
+        pending:
+          feature: [T74, T67]
+          reason: loan perquisite threshold
+        expect: {perquisite_month: 0}
+  - name: above_threshold
+    scenario:
+      kind: loan_perquisite
+      inputs: {aggregate: 30000000, max_outstanding: 30000000, interest_pct: 0, benchmark_pct: 10}
+    checks:
+      perquisite:
+        pending:
+          feature: [T74, T67]
+          reason: loan perquisite value
+        expect: {perquisite_month: 250000}

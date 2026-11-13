@@ -1,0 +1,422 @@
+# Golden payroll cases: monthly statutory deductions.
+# Money is integer paise (100 = Rs 1). Keys ending in _days/_pct/_date and the
+# keys listed in loader.NON_MONEY are not money. A check with `pending` is reported
+# as skipped with its feature until that feature lands; then remove the mark.
+# Assumptions shared by every case: gamcs_hr/tests/golden/cases/_defaults.yaml.
+area: Monthly statutory deductions
+cases:
+- id: G10
+  title: Full month at CTC 12,00,000, Maharashtra man, new regime, November 2026
+  tags: [monthly, pf capped]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: slip
+      period: 2026-11
+      employee: {gender: Male, state: Maharashtra, date_of_birth: '1990-05-01', date_of_joining: '2022-01-10'}
+      structure:
+      - {component: basic, monthly: 5000000, class: wages}
+      - {component: hra, monthly: 2500000, class: exclusion}
+      - {component: special, monthly: 2200000, class: wages}
+      ytd: {taxable: 68620000, tds: 0}
+    checks:
+      earnings:
+        expect: {paid_days: 30, basic: 5000000, hra: 2500000, special: 2200000, gross: 9700000}
+      pf:
+        pending: {feature: T57, reason: 'PF on code wages (Basic + Special) with the 25,000 ceiling and the employer
+            EPS/EPF/EDLI/admin split'}
+        expect: {code_wages: 7200000, pf_wages: 2500000, pf_ee: 300000, eps: 208300, epf_er: 91700, edli: 12500,
+          pf_admin: 12500}
+      esi:
+        pending: {feature: T58, reason: ESI coverage tested on code wages}
+        expect: {esi_ee: 0, esi_er: 0}
+      pt:
+        pending: {feature: T59, reason: Maharashtra PT slab}
+        expect: {pt: 20000}
+      tds:
+        pending: {feature: T66, reason: monthly TDS projection under the Income-tax Act 2025}
+        expect: {projected_annual: 117120000, taxable_income: 109620000, slab_tax: 4962000, rebate: 4962000, cess: 0,
+          annual_tax: 0, tds: 0}
+      net:
+        pending:
+          feature: [T57, T59, T66]
+          reason: net needs PF, PT and TDS
+        expect: {net: 9380000}
+- id: G11
+  title: 'Same employee in February 2027: Maharashtra PT of 300'
+  tags: [pt february]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: slip
+      period: 2027-02
+      employee: {gender: Male, state: Maharashtra, date_of_birth: '1990-05-01', date_of_joining: '2022-01-10'}
+      structure:
+      - {component: basic, monthly: 5000000, class: wages}
+      - {component: hra, monthly: 2500000, class: exclusion}
+      - {component: special, monthly: 2200000, class: wages}
+    checks:
+      earnings:
+        expect: {paid_days: 28, basic: 5000000, hra: 2500000, special: 2200000, gross: 9700000}
+      pt:
+        pending: {feature: T59, reason: Maharashtra February instalment}
+        expect: {pt: 30000, pt_year: 250000}
+      net:
+        pending:
+          feature: [T57, T59, T66]
+          reason: net needs PF, PT and TDS
+        expect: {net: 9370000}
+- id: G12
+  title: 'Low wage: ESI on code wages; Maharashtra man and woman on the G02 structure'
+  tags: [esi code wages, pt gender]
+  ca_signoff: true
+  variants:
+  - name: male
+    scenario:
+      kind: slip
+      period: 2026-11
+      employee: {gender: Male, state: Maharashtra, date_of_birth: '1990-05-01', date_of_joining: '2022-01-10'}
+      structure:
+      - {component: basic, monthly: 1000000, class: wages}
+      - {component: hra, monthly: 400000, class: exclusion}
+      - {component: special, monthly: 428600, class: wages}
+    checks:
+      earnings:
+        expect: {paid_days: 30, basic: 1000000, hra: 400000, special: 428600, gross: 1828600}
+      pf:
+        pending: {feature: T57, reason: 'PF on code wages (Basic + Special) with the 25,000 ceiling and the employer
+            EPS/EPF/EDLI/admin split'}
+        expect: {code_wages: 1428600, pf_wages: 1428600, pf_ee: 171400, eps: 119000, epf_er: 52400, edli: 7100,
+          pf_admin: 7100}
+      esi:
+        pending:
+          feature: [T56, T58]
+          reason: ESI on code wages with the employer share and rounding up
+        note: On gross (the old basis) the employee share would be 138.
+        expect: {esi_ee: 10800, esi_er: 46500}
+      pt:
+        pending: {feature: T59, reason: Maharashtra PT by gender}
+        expect: {pt: 20000}
+      net:
+        pending:
+          feature: [T57, T58, T59]
+          reason: net needs PF, ESI and PT
+        expect: {net: 1626400}
+  - name: female
+    scenario:
+      kind: slip
+      period: 2026-11
+      employee: {gender: Female, state: Maharashtra, date_of_birth: '1990-05-01', date_of_joining: '2022-01-10'}
+      structure:
+      - {component: basic, monthly: 1000000, class: wages}
+      - {component: hra, monthly: 400000, class: exclusion}
+      - {component: special, monthly: 428600, class: wages}
+    checks:
+      earnings:
+        expect: {paid_days: 30, basic: 1000000, hra: 400000, special: 428600, gross: 1828600}
+      pf:
+        pending: {feature: T57, reason: 'PF on code wages (Basic + Special) with the 25,000 ceiling and the employer
+            EPS/EPF/EDLI/admin split'}
+        expect: {code_wages: 1428600, pf_wages: 1428600, pf_ee: 171400, eps: 119000, epf_er: 52400, edli: 7100,
+          pf_admin: 7100}
+      esi:
+        pending:
+          feature: [T56, T58]
+          reason: ESI on code wages with the employer share and rounding up
+        note: On gross (the old basis) the employee share would be 138.
+        expect: {esi_ee: 10800, esi_er: 46500}
+      pt:
+        pending: {feature: T59, reason: Maharashtra PT by gender}
+        expect: {pt: 0}
+      net:
+        pending:
+          feature: [T57, T58, T59]
+          reason: net needs PF, ESI and PT
+        expect: {net: 1646400}
+- id: G13
+  title: 'ESI coverage on code wages: 26,000 gross is still covered'
+  tags: [esi coverage]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: esi_month
+      inputs:
+        wages: 1800000
+        tested_exclusions: 800000
+        components: {basic: 1600000, da: 200000, other_allowances: 800000}
+    checks:
+      esi:
+        pending:
+          feature: [T56, T58]
+          reason: ESI on code wages with the employer share and rounding up
+        expect: {code_wages: 1800000, covered: true, esi_ee: 13500, esi_er: 58500}
+- id: G14
+  title: 'ESI coverage: 50,000 gross with heavy exclusions is not covered'
+  tags: [esi coverage]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: esi_month
+      inputs:
+        wages: 2000000
+        tested_exclusions: 3000000
+        components: {basic: 1800000, da: 200000, other_allowances: 3000000}
+    checks:
+      esi:
+        pending:
+          feature: [T56, T58]
+          reason: ESI on code wages with the employer share and rounding up
+        expect: {code_wages: 2500000, covered: false, esi_ee: 0, esi_er: 0, flag: NOT_ESI_ELIGIBLE}
+- id: G15
+  title: ESI for a full month at code wages of 20,000
+  tags: [esi rounding]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: slip
+      period: 2026-11
+      employee: {gender: Male, state: Karnataka, date_of_birth: '1990-05-01', date_of_joining: '2022-01-10'}
+      structure:
+      - {component: basic, monthly: 2000000, class: wages}
+    checks:
+      employee_share:
+        note: Basic only, so gross equals code wages and the current gross-based rule applies.
+        expect: {gross: 2000000, esi_ee: 15000}
+      employer_share:
+        pending: {feature: T58, reason: employer ESI share}
+        expect: {esi_er: 65000}
+- id: G16
+  title: 'ESI: wages pass 21,000 inside a contribution period'
+  tags: [esi contribution period]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: esi_periods
+      inputs:
+        months:
+        - {month: 2026-06, code_wages: 2000000}
+        - {month: 2026-07, code_wages: 2300000}
+        - {month: 2026-09, code_wages: 2300000}
+        - {month: 2026-10, code_wages: 2300000}
+    checks:
+      months:
+        pending: {feature: T58, reason: 'contribution periods (Apr-Sep, Oct-Mar)'}
+        expect:
+          rows:
+          - {month: 2026-06, covered: true, esi_ee: 15000, esi_er: 65000}
+          - {month: 2026-07, covered: true, esi_ee: 17300, esi_er: 74800}
+          - {month: 2026-09, covered: true, esi_ee: 17300, esi_er: 74800}
+          - {month: 2026-10, covered: false, esi_ee: 0, esi_er: 0}
+          flag: ESI_OVER_THRESHOLD
+- id: G17
+  title: 'Overtime: out of the ESI base unless the 50% test adds it back'
+  tags: [esi, overtime]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: esi_month
+      inputs:
+        wages: 1400000
+        tested_exclusions: 780000
+        components: {basic: 1200000, special: 200000, hra: 480000, overtime: 300000}
+    checks:
+      default:
+        pending:
+          feature: [T56, T58]
+          reason: ESI on code wages with the employer share and rounding up
+        expect: {code_wages: 1400000, esi_ee: 10500, esi_er: 45500}
+      overtime_in_base:
+        pending: {feature: T58, reason: setting to keep overtime in the ESI base}
+        expect: {esi_base: 1700000, esi_ee: 12800, esi_er: 55300}
+- id: G18
+  title: 'ESI low-wage exemption: daily average of 176 or less'
+  tags: [esi exemption]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: esi_month
+      inputs: {wages: 500000, tested_exclusions: 0, days: 30}
+    checks:
+      esi:
+        pending: {feature: T58, reason: low-wage employee exemption}
+        note: The current gross-based rule gives an employee share of 38.
+        expect: {esi_ee: 0, esi_er: 16300}
+- id: G19
+  title: Karnataka PT at the 25,000 threshold
+  tags: [pt karnataka]
+  ca_signoff: true
+  variants:
+  - name: below_nov
+    scenario:
+      kind: slip
+      period: 2026-11
+      employee: {gender: Male, state: Karnataka, date_of_birth: '1990-05-01', date_of_joining: '2022-01-10'}
+      structure:
+      - {component: basic, monthly: 2499900, class: wages}
+    checks:
+      pt:
+        expect: {gross: 2499900, pt: 0}
+  - name: at_nov
+    scenario:
+      kind: slip
+      period: 2026-11
+      employee: {gender: Male, state: Karnataka, date_of_birth: '1990-05-01', date_of_joining: '2022-01-10'}
+      structure:
+      - {component: basic, monthly: 2500000, class: wages}
+    checks:
+      pt:
+        expect: {gross: 2500000, pt: 20000}
+  - name: at_feb
+    scenario:
+      kind: slip
+      period: 2027-02
+      employee: {gender: Male, state: Karnataka, date_of_birth: '1990-05-01', date_of_joining: '2022-01-10'}
+      structure:
+      - {component: basic, monthly: 2500000, class: wages}
+    checks:
+      pt:
+        pending: {feature: T59, reason: Karnataka February instalment}
+        expect: {gross: 2500000, pt: 30000}
+- id: G20
+  title: West Bengal PT schedule change on 1 October 2026
+  tags: [pt west bengal]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: pt_table
+      inputs:
+        state: West Bengal
+        months: [2026-09, 2026-10]
+    checks:
+      table:
+        pending: {feature: T59, reason: PT pack versions picked by salary month}
+        expect:
+          rows:
+          - {gross: 1800000, sep_2026: 13000, oct_2026: 0}
+          - {gross: 2500000, sep_2026: 13000, oct_2026: 10000}
+          - {gross: 4500000, sep_2026: 20000, oct_2026: 14000}
+          - {gross: 12000000, sep_2026: 20000, oct_2026: 20800}
+- id: G21
+  title: Tamil Nadu (Greater Chennai) half-yearly PT
+  tags: [pt tamil nadu]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: pt_half_year
+      inputs: {state: Tamil Nadu, gross_monthly: 900000}
+    checks:
+      september:
+        pending: {feature: T59, reason: half-yearly PT in the last month}
+        expect: {half_year_income: 5400000, pt: 93000}
+      july_leaver:
+        pending:
+          feature: [T59, T75]
+          reason: half-yearly PT for a leaver
+        expect: {half_year_income: 3600000, pt: 42500}
+- id: G22
+  title: One gross (18,286) in six states, plus slab edges
+  tags: [pt states]
+  ca_signoff: true
+  variants:
+  - name: maharashtra
+    scenario:
+      kind: slip
+      period: 2026-11
+      employee: {gender: Male, state: Maharashtra, date_of_birth: '1990-05-01', date_of_joining: '2022-01-10'}
+      structure:
+      - {component: basic, monthly: 1000000, class: wages}
+      - {component: hra, monthly: 400000, class: exclusion}
+      - {component: special, monthly: 428600, class: wages}
+    checks:
+      pt:
+        pending: {feature: T59, reason: Maharashtra PT slab}
+        expect: {gross: 1828600, pt: 20000}
+  - name: karnataka
+    scenario:
+      kind: slip
+      period: 2026-11
+      employee: {gender: Male, state: Karnataka, date_of_birth: '1990-05-01', date_of_joining: '2022-01-10'}
+      structure:
+      - {component: basic, monthly: 1000000, class: wages}
+      - {component: hra, monthly: 400000, class: exclusion}
+      - {component: special, monthly: 428600, class: wages}
+    checks:
+      pt:
+        expect: {gross: 1828600, pt: 0}
+  - name: west_bengal
+    scenario:
+      kind: slip
+      period: 2026-11
+      employee: {gender: Male, state: West Bengal, date_of_birth: '1990-05-01', date_of_joining: '2022-01-10'}
+      structure:
+      - {component: basic, monthly: 1000000, class: wages}
+      - {component: hra, monthly: 400000, class: exclusion}
+      - {component: special, monthly: 428600, class: wages}
+    checks:
+      pt:
+        pending: {feature: T59, reason: West Bengal PT slab}
+        expect: {gross: 1828600, pt: 0}
+  - name: telangana
+    scenario:
+      kind: slip
+      period: 2026-11
+      employee: {gender: Male, state: Telangana, date_of_birth: '1990-05-01', date_of_joining: '2022-01-10'}
+      structure:
+      - {component: basic, monthly: 1000000, class: wages}
+      - {component: hra, monthly: 400000, class: exclusion}
+      - {component: special, monthly: 428600, class: wages}
+    checks:
+      pt:
+        pending: {feature: T59, reason: Telangana PT slab}
+        expect: {gross: 1828600, pt: 15000}
+  - name: gujarat
+    scenario:
+      kind: slip
+      period: 2026-11
+      employee: {gender: Male, state: Gujarat, date_of_birth: '1990-05-01', date_of_joining: '2022-01-10'}
+      structure:
+      - {component: basic, monthly: 1000000, class: wages}
+      - {component: hra, monthly: 400000, class: exclusion}
+      - {component: special, monthly: 428600, class: wages}
+    checks:
+      pt:
+        pending: {feature: T59, reason: Gujarat PT slab}
+        expect: {gross: 1828600, pt: 20000}
+  - name: delhi
+    scenario:
+      kind: slip
+      period: 2026-11
+      employee: {gender: Male, state: Delhi, date_of_birth: '1990-05-01', date_of_joining: '2022-01-10'}
+      structure:
+      - {component: basic, monthly: 1000000, class: wages}
+      - {component: hra, monthly: 400000, class: exclusion}
+      - {component: special, monthly: 428600, class: wages}
+    checks:
+      pt:
+        pending: {feature: T59, reason: Delhi PT slab}
+        expect: {gross: 1828600, pt: 0}
+  - name: edges
+    scenario:
+      kind: pt_table
+      inputs: {month: 2026-11}
+    checks:
+      table:
+        pending: {feature: T59, reason: PT slab edges per state}
+        expect:
+          rows:
+          - {state: Gujarat, gross: 1200000, pt: 0}
+          - {state: Gujarat, gross: 1200100, pt: 20000}
+          - {state: Telangana, gross: 1500000, pt: 0}
+          - {state: Telangana, gross: 2000000, pt: 15000}
+          - {state: Telangana, gross: 2000100, pt: 20000}
+          - {state: Odisha, gross: 1828600, pt: 0}

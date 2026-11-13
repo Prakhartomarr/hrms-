@@ -1,0 +1,242 @@
+# Golden payroll cases: income tax (income-tax act 2025, tax year 2026-27).
+# Money is integer paise (100 = Rs 1). Keys ending in _days/_pct/_date and the
+# keys listed in loader.NON_MONEY are not money. A check with `pending` is reported
+# as skipped with its feature until that feature lands; then remove the mark.
+# Assumptions shared by every case: gamcs_hr/tests/golden/cases/_defaults.yaml.
+area: Income tax (Income-tax Act 2025, tax year 2026-27)
+cases:
+- id: G33
+  title: Festival bonus of 1,00,000 in November at CTC 18,00,000, new regime
+  tags: [tds one-time]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: tds_month
+      inputs:
+        regime: new
+        month: 2026-11
+        ytd: {taxable: 103620000, tds: 8509800}
+        current_month: 14700000
+        future_monthly: 14700000
+        one_time: 10000000
+    checks:
+      tds:
+        pending: {feature: T66, reason: monthly TDS projection under the Income-tax Act 2025}
+        expect: {projected_annual: 177120000, taxable_income: 169620000, slab_tax: 13924000, cess: 556960, annual_tax: 14481000,
+          taxable_with_one_time: 179620000, slab_tax_with_one_time: 15924000, annual_tax_with_one_time: 16561000,
+          tds_recurring: 1194200, tds_one_time: 2080000, tds: 3274200}
+      net:
+        pending:
+          feature: [T57, T59, T66]
+          reason: net needs PF, PT and TDS
+        expect: {net: 21105800}
+- id: G34
+  title: 'New regime: taxable income of exactly 12,00,000'
+  tags: [rebate]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: annual_tax
+      inputs: {regime: new, taxable_income: 120000000}
+    checks:
+      tax:
+        pending: {feature: T66, reason: new-regime rebate}
+        expect: {slab_tax: 6000000, rebate: 6000000, cess: 0, annual_tax: 0}
+- id: G35
+  title: 'New regime: 12,10,000, marginal relief on the rebate'
+  tags: [rebate, marginal relief]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: annual_tax
+      inputs: {regime: new, taxable_income: 121000000}
+    checks:
+      tax:
+        pending: {feature: T66, reason: marginal relief on the rebate}
+        expect: {slab_tax: 6150000, rebate: 5150000, cess: 40000, annual_tax: 1040000}
+- id: G36
+  title: 'Old regime April projection: CTC 12L, Mumbai rent 30,000, deductions 1,75,000'
+  tags: [old regime, hra]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: tds_month
+      inputs:
+        regime: old
+        month: 2026-04
+        ytd: {taxable: 0, tds: 0}
+        current_month: 9820000
+        future_monthly: 9820000
+        hra_received_annual: 30000000
+        rent_annual: 36000000
+        basic_annual: 60000000
+        city: Mumbai
+        pt_annual: 250000
+        deductions: {s123: 15000000, s126: 2500000}
+    checks:
+      hra:
+        pending: {feature: T66, reason: 'HRA exemption, least of three'}
+        expect: {hra_received: 30000000, rent_less_10pct: 30000000, salary_share: 30000000, hra_exempt: 30000000}
+      tds:
+        pending: {feature: T66, reason: monthly TDS projection under the Income-tax Act 2025}
+        expect: {projected_annual: 117840000, standard_deduction: 5000000, taxable_income: 65090000, slab_tax: 4268000,
+          cess: 170720, annual_tax: 4439000, tds: 369900}
+- id: G37
+  title: Same employee on the new regime (regime comparison)
+  tags: [regime comparison]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: tds_month
+      inputs:
+        regime: new
+        month: 2026-04
+        ytd: {taxable: 0, tds: 0}
+        current_month: 9820000
+        future_monthly: 9820000
+    checks:
+      tds:
+        pending: {feature: T66, reason: regime comparison}
+        expect: {projected_annual: 117840000, taxable_income: 110340000, slab_tax: 5034000, rebate: 5034000, annual_tax: 0,
+          tds: 0, recommended: new}
+- id: G38
+  title: 'HRA city class for 2026-27: Bengaluru moves to 50%'
+  tags: [hra]
+  ca_signoff: true
+  variants:
+  - name: bengaluru
+    scenario:
+      kind: hra_exemption
+      inputs: {city: Bengaluru, basic_annual: 60000000, hra_annual: 30000000, rent_annual: 40000000}
+    checks:
+      hra:
+        pending: {feature: T66, reason: HRA city class list for 2026-27}
+        expect: {hra_received: 30000000, rent_less_10pct: 34000000, salary_share: 30000000, hra_exempt: 30000000}
+  - name: jaipur
+    scenario:
+      kind: hra_exemption
+      inputs: {city: Jaipur, basic_annual: 60000000, hra_annual: 30000000, rent_annual: 40000000}
+    checks:
+      hra:
+        pending: {feature: T66, reason: HRA city class list for 2026-27}
+        expect: {hra_received: 30000000, rent_less_10pct: 34000000, salary_share: 24000000, hra_exempt: 24000000}
+- id: G39
+  title: 'Old regime rebate edge: 5,00,000 against 5,00,010'
+  tags: [old regime, rebate]
+  ca_signoff: true
+  variants:
+  - name: at_limit
+    scenario:
+      kind: annual_tax
+      inputs: {regime: old, taxable_income: 50000000}
+    checks:
+      tax:
+        pending: {feature: T66, reason: old-regime rebate}
+        expect: {slab_tax: 1250000, rebate: 1250000, annual_tax: 0}
+  - name: over_limit
+    scenario:
+      kind: annual_tax
+      inputs: {regime: old, taxable_income: 50001000}
+    checks:
+      tax:
+        pending: {feature: T66, reason: old-regime rebate has no marginal relief}
+        expect: {annual_tax: 1300000}
+- id: G40
+  title: Surcharge with marginal relief, new regime
+  tags: [surcharge]
+  ca_signoff: true
+  variants:
+  - name: at_50l
+    scenario:
+      kind: annual_tax
+      inputs: {regime: new, taxable_income: 500000000}
+    checks:
+      tax:
+        pending: {feature: T66, reason: surcharge}
+        expect: {slab_tax: 108000000, surcharge: 0, cess: 4320000, annual_tax: 112320000}
+  - name: at_50_1l
+    scenario:
+      kind: annual_tax
+      inputs: {regime: new, taxable_income: 501000000}
+    checks:
+      tax:
+        pending: {feature: T66, reason: surcharge marginal relief}
+        expect: {slab_tax: 108300000, surcharge_before_relief: 10830000, surcharge_relief: 10130000, surcharge: 700000,
+          cess: 4360000, annual_tax: 113360000}
+  - name: at_60l
+    scenario:
+      kind: annual_tax
+      inputs: {regime: new, taxable_income: 600000000}
+    checks:
+      tax:
+        pending: {feature: T66, reason: surcharge}
+        expect: {slab_tax: 138000000, surcharge: 13800000, cess: 6072000, annual_tax: 157872000}
+- id: G41
+  title: Joins 1 October 2026 with salary from a previous employer
+  tags: [previous employer]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: tds_month
+      inputs:
+        regime: new
+        month: 2026-10
+        ytd: {taxable: 60000000, tds: 0, source: previous_employer}
+        current_month: 14700000
+        future_monthly: 14700000
+    checks:
+      tds:
+        pending:
+          feature: [T66, T67]
+          reason: previous-employer income in the projection
+        expect: {projected_annual: 148200000, taxable_income: 140700000, slab_tax: 9105000, cess: 364200, annual_tax: 9469000,
+          tds: 1578200}
+- id: G42
+  title: 'Senior citizen (62), old regime: 60,000 a month, deductions 1,50,000'
+  tags: [old regime, senior]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: tds_month
+      inputs:
+        regime: old
+        senior: true
+        month: 2026-04
+        ytd: {taxable: 0, tds: 0}
+        current_month: 6000000
+        future_monthly: 6000000
+        pt_annual: 250000
+        deductions: {s123: 15000000}
+    checks:
+      tds:
+        pending: {feature: T66, reason: senior-citizen old-regime slabs}
+        expect: {projected_annual: 72000000, taxable_income: 51750000, slab_tax: 1350000, cess: 54000, annual_tax: 1404000,
+          tds: 117000}
+- id: G43
+  title: Employer NPS at 14% of Basic, new regime
+  tags: [employer nps]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: tds_month
+      inputs:
+        regime: new
+        month: 2026-04
+        ytd: {taxable: 0, tds: 0}
+        current_month: 14820000
+        future_monthly: 14820000
+        employer_nps_annual: 12600000
+        basic_monthly: 7500000
+    checks:
+      tds:
+        pending: {feature: T66, reason: employer NPS deduction}
+        expect: {employer_nps_monthly: 1050000, cash_gross: 13770000, projected_annual: 177840000, taxable_income: 157740000,
+          slab_tax: 11661000, cess: 466440, annual_tax: 12127000, annual_tax_without_nps: 14631000, tds: 1010600}

@@ -1,0 +1,160 @@
+# Golden payroll cases: structure building and validation.
+# Money is integer paise (100 = Rs 1). Keys ending in _days/_pct/_date and the
+# keys listed in loader.NON_MONEY are not money. A check with `pending` is reported
+# as skipped with its feature until that feature lands; then remove the mark.
+# Assumptions shared by every case: gamcs_hr/tests/golden/cases/_defaults.yaml.
+area: Structure building and validation
+cases:
+- id: G01
+  title: 'CTC 12,00,000 a year, metro: employer PF sits inside CTC and the ceiling binds'
+  tags: [structure, balancer]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: structure_from_ctc
+      inputs: {ctc_annual: 120000000, location: metro, pay_group: STD, pf_ceiling: 2500000}
+    checks:
+      structure:
+        pending: {feature: T61, reason: CTC balancer with employer PF inside CTC}
+        expect: {basic: 5000000, hra: 2500000, pf_er: 300000, special: 2200000, gross: 9700000, code_wages: 7200000}
+- id: G02
+  title: 'CTC 2,40,000, non-metro: PF on a balancer below the ceiling needs a fixed point'
+  tags: [structure, fixed point]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: structure_from_ctc
+      inputs: {ctc_annual: 24000000, location: non_metro, pay_group: STD, pf_ceiling: 2500000}
+    checks:
+      structure:
+        pending: {feature: T61, reason: circular PF on the balancer}
+        note: Special solves 1.12 x S = 4,800 -> 4,285.71; PF rounds half-up and Special absorbs the rest.
+        expect: {basic: 1000000, hra: 400000, pf_er: 171400, special: 428600, gross: 1828600, code_wages: 1428600}
+- id: G03
+  title: CTC 2,40,000 with employer ESI also inside CTC (two circular terms)
+  tags: [structure, esi in ctc]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: structure_from_ctc
+      inputs: {ctc_annual: 24000000, location: non_metro, pay_group: STD, pf_ceiling: 2500000, esi_in_ctc: true}
+    checks:
+      structure:
+        pending:
+          feature: [T61, T58]
+          reason: balancer with both employer PF and employer ESI inside CTC
+        expect: {pf_er: 166600, esi_er: 45200, special: 388200, gross: 1788200, code_wages: 1388200}
+- id: G04
+  title: PF ceiling rise from 15,000 to 25,000 makes CTC-driven structures stale
+  tags: [structure, stale]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: structure_restatement
+      inputs: {ctc_annual: 120000000, location: metro, pay_group: STD, old_ceiling: 1500000, new_ceiling: 2500000,
+        effective_from: '2026-10-01'}
+    checks:
+      version_1:
+        pending:
+          feature: [T61, T57]
+          reason: structure versions per PF ceiling
+        expect: {pf_er: 180000, special: 2320000, gross: 9820000, ctc_annual: 120000000}
+      version_2:
+        pending:
+          feature: [T61, T57]
+          reason: restating structures when the PF ceiling pack changes
+        expect: {pf_er: 300000, special: 2200000, gross: 9700000, ctc_annual: 120000000}
+- id: G05
+  title: 'Validation: Basic under half of CTC'
+  tags: [validation]
+  ca_signoff: false
+  variants:
+  - name: main
+    scenario:
+      kind: structure_validation
+      inputs: {ctc_annual: 90000000, basic: 3000000, hra: 1500000, pf_er: 300000, special: 2700000}
+    checks:
+      result:
+        pending: {feature: T61, reason: basic-share check with the suggested fix}
+        expect: {error: BASIC_BELOW_HALF_CTC, basic_share_pct: 40, basic_needed: 3750000, hra_after_fix: 1875000,
+          special_after_fix: 1575000, pf_er_after_fix: 300000}
+- id: G06
+  title: Code wages for the labour ministry's own worked example
+  tags: [labour code]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: code_wages
+      inputs: {wages: 2000000, tested_exclusions: 4000000, untested_exclusions: 1600000}
+    checks:
+      wages:
+        pending: {feature: T56, reason: 'wage definition: wage classes on components and the 50% exclusion add-back'}
+        note: Untested heads (gratuity, retrenchment) count in total remuneration but not in the tested sum.
+        expect: {total_remuneration: 7600000, limit: 3800000, excess: 200000, code_wages: 2200000}
+- id: G07
+  title: 'Heavy exclusions: the add-back raises PF and gratuity wages'
+  tags: [labour code, pf wages]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: code_wages
+      inputs:
+        wages: 1500000
+        tested_exclusions: 2500000
+        untested_exclusions: 0
+        components: {basic: 1500000, hra: 750000, conveyance: 500000, special_expenses: 1250000}
+    checks:
+      wages:
+        pending: {feature: T56, reason: 'wage definition: wage classes on components and the 50% exclusion add-back'}
+        expect: {total_remuneration: 4000000, limit: 2000000, excess: 500000, code_wages: 2000000}
+      pf:
+        pending: {feature: T57, reason: 'PF on code wages (Basic + Special) with the 25,000 ceiling and the employer
+            EPS/EPF/EDLI/admin split'}
+        expect: {pf_ee: 240000, eps: 166600}
+      gratuity_10_years:
+        pending: {feature: T73, reason: gratuity on code wages}
+        expect: {gratuity: 11538500}
+      block_fixes:
+        pending:
+          feature: [T56, T61]
+          reason: add-back warning with the two suggested fixes
+        expect: {move_to_basic: 500000, or_remove_exclusions: 1000000}
+- id: G08
+  title: 'Validation: structure below the Delhi unskilled minimum wage'
+  tags: [validation, minimum wage]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: minimum_wage
+      inputs: {state: Delhi, skill: unskilled, floor_monthly: 1845600, basic: 1200000, hra: 480000, special: 500000,
+        paid_days: 20, days: 30}
+    checks:
+      structure:
+        pending: {feature: T61, reason: minimum-wage check on wage-class components}
+        expect: {error: BELOW_MIN_WAGE, compared: 1700000, shortfall: 145600}
+      run_month:
+        pending: {feature: T61, reason: minimum-wage check on a prorated month}
+        expect: {compared: 1133333, floor: 1230400, shortfall: 97067}
+- id: G09
+  title: 'Gross-driven structure: 18,000 a month gross with employer PF and ESI on top'
+  tags: [structure, gross mode]
+  ca_signoff: false
+  variants:
+  - name: main
+    scenario:
+      kind: structure_from_gross
+      inputs: {gross_monthly: 1800000, location: non_metro, pay_group: STD}
+    checks:
+      structure:
+        pending:
+          feature: [T61, T58]
+          reason: gross-driven structure mode
+        expect: {basic: 900000, hra: 360000, special: 540000, code_wages: 1440000, pf_er: 172800, esi_er: 46800,
+          ctc_monthly: 2019600, ctc_annual: 24235200}

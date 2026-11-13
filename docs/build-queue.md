@@ -103,7 +103,7 @@ Exit for waves 1 to 3: GAMCS runs a full month on it in parallel with its curren
 
 | ID | Task | Owns | Depends | Lane | Status |
 | --- | --- | --- | --- | --- | --- |
-| T55 | Golden test harness: named payroll scenarios asserted to the paisa; CI gate on upstream version bumps | `tests/golden/` | T02 | Q | |
+| T55 | Golden test harness: named payroll scenarios asserted to the paisa; CI gate on upstream version bumps | `tests/golden/` | T02 | Q | done |
 | T56 | Adopt the India payroll app (pinned in ADR 0002): enable it, move the demo structure onto it, statutory flags and exclusion heads on salary components, wage definition helper | `payroll/components/` | T10, T55 | P | |
 | T57 | PF from packs: rates, ceilings, pension cut-off at 58, international workers | `statutory/pf/` | T56 | P | |
 | T58 | ESI from packs: contribution periods, wage definition, low-wage exemption, rounding, PwD ceiling | `statutory/esi/` | T56 | P | |

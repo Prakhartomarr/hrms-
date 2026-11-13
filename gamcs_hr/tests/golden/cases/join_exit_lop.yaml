@@ -1,0 +1,150 @@
+# Golden payroll cases: joiners, leavers and loss of pay.
+# Money is integer paise (100 = Rs 1). Keys ending in _days/_pct/_date and the
+# keys listed in loader.NON_MONEY are not money. A check with `pending` is reported
+# as skipped with its feature until that feature lands; then remove the mark.
+# Assumptions shared by every case: gamcs_hr/tests/golden/cases/_defaults.yaml.
+area: Joiners, leavers and loss of pay
+cases:
+- id: G23
+  title: 'Joins 16 November 2026 at CTC 12,00,000: PF ceiling is not prorated'
+  tags: [proration]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: slip
+      period: 2026-11
+      employee: {gender: Male, state: Maharashtra, date_of_birth: '1990-05-01', date_of_joining: '2026-11-16'}
+      structure:
+      - {component: basic, monthly: 5000000, class: wages}
+      - {component: hra, monthly: 2500000, class: exclusion}
+      - {component: special, monthly: 2200000, class: wages}
+    checks:
+      earnings:
+        expect: {paid_days: 15, basic: 2500000, hra: 1250000, special: 1100000, gross: 4850000}
+      pf:
+        pending: {feature: T57, reason: 'PF on code wages (Basic + Special) with the 25,000 ceiling and the employer
+            EPS/EPF/EDLI/admin split'}
+        expect: {code_wages: 3600000, pf_wages: 2500000, pf_ee: 300000, eps: 208300, epf_er: 91700, edli: 12500,
+          pf_admin: 12500}
+      pt:
+        pending: {feature: T59, reason: Maharashtra PT slab}
+        expect: {pt: 20000}
+      net:
+        pending:
+          feature: [T57, T59]
+          reason: net needs PF and PT
+        expect: {net: 4530000}
+- id: G24
+  title: 'Low-wage joiner: PF and ESI on earned code wages, PT on earned gross'
+  tags: [proration, esi]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: slip
+      period: 2026-11
+      employee: {gender: Male, state: Maharashtra, date_of_birth: '1990-05-01', date_of_joining: '2026-11-16'}
+      structure:
+      - {component: basic, monthly: 1000000, class: wages}
+      - {component: hra, monthly: 400000, class: exclusion}
+      - {component: special, monthly: 428600, class: wages}
+    checks:
+      earnings:
+        expect: {paid_days: 15, basic: 500000, hra: 200000, special: 214300, gross: 914300}
+      pf:
+        pending: {feature: T57, reason: 'PF on code wages (Basic + Special) with the 25,000 ceiling and the employer
+            EPS/EPF/EDLI/admin split'}
+        expect: {code_wages: 714300, pf_wages: 714300, pf_ee: 85700, eps: 59500, epf_er: 26200, edli: 3600, pf_admin: 3600}
+      esi:
+        pending:
+          feature: [T56, T58]
+          reason: ESI on code wages with the employer share and rounding up
+        expect: {esi_ee: 5400, esi_er: 23300}
+      pt:
+        pending: {feature: T59, reason: 'Maharashtra 7,501-10,000 band'}
+        expect: {pt: 17500}
+      net:
+        pending:
+          feature: [T57, T58, T59]
+          reason: net needs PF, ESI and PT
+        expect: {net: 805700}
+- id: G25
+  title: 'Leaves on 10 November 2026: earnings to the rupee, PF on part-month wages'
+  tags: [proration, exit]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: slip
+      period: 2026-11
+      employee: {gender: Male, state: Maharashtra, date_of_birth: '1990-05-01', date_of_joining: '2022-01-10', relieving_date: '2026-11-10'}
+      structure:
+      - {component: basic, monthly: 5000000, class: wages}
+      - {component: hra, monthly: 2500000, class: exclusion}
+      - {component: special, monthly: 2200000, class: wages}
+    checks:
+      earnings:
+        pending: {feature: T56, reason: earned amounts rounded half-up to the rupee per component}
+        note: Today each earning keeps its paise (16,666.67), so gross is 32,333.33.
+        expect: {paid_days: 10, basic: 1666700, hra: 833300, special: 733300, gross: 3233300}
+      pf:
+        pending: {feature: T57, reason: 'PF on code wages (Basic + Special) with the 25,000 ceiling and the employer
+            EPS/EPF/EDLI/admin split'}
+        expect: {code_wages: 2400000, pf_wages: 2400000, pf_ee: 288000, eps: 199900, epf_er: 88100, edli: 12000,
+          pf_admin: 12000, ncp_days: 0}
+      pt:
+        pending: {feature: T59, reason: Maharashtra PT slab}
+        expect: {pt: 20000}
+      net:
+        pending:
+          feature: [T56, T57, T59]
+          reason: net needs rounding, PF and PT
+        expect: {net_before_settlement: 2925300}
+- id: G26
+  title: Three days of loss of pay in November, CTC 6,00,000
+  tags: [lop]
+  ca_signoff: false
+  variants:
+  - name: main
+    scenario:
+      kind: slip
+      period: 2026-11
+      employee: {gender: Male, state: Maharashtra, date_of_birth: '1990-05-01', date_of_joining: '2022-01-10'}
+      structure:
+      - {component: basic, monthly: 2500000, class: wages}
+      - {component: hra, monthly: 1250000, class: exclusion}
+      - {component: special, monthly: 950000, class: wages}
+      lop_dates: ['2026-11-03', '2026-11-04', '2026-11-05']
+    checks:
+      earnings:
+        expect: {paid_days: 27, basic: 2250000, hra: 1125000, special: 855000, gross: 4230000}
+      pf:
+        pending: {feature: T57, reason: 'PF on code wages (Basic + Special) with the 25,000 ceiling and the employer
+            EPS/EPF/EDLI/admin split'}
+        expect: {code_wages: 3105000, pf_wages: 2500000, pf_ee: 300000, eps: 208300, epf_er: 91700, edli: 12500,
+          pf_admin: 12500}
+      pt:
+        pending: {feature: T59, reason: Maharashtra PT slab}
+        expect: {pt: 20000}
+      net:
+        pending:
+          feature: [T57, T59]
+          reason: net needs PF and PT
+        expect: {net: 3910000}
+- id: G27
+  title: Two October LOP days (31-day month) reversed in November
+  tags: [arrear attendance]
+  ca_signoff: false
+  variants:
+  - name: main
+    scenario:
+      kind: attendance_arrear
+      inputs: {structure: G02, source_month: 2026-10, source_days: 31, reversed_lop_days: 2}
+    checks:
+      arrear:
+        pending:
+          feature: [T65, T57, T58]
+          reason: attendance arrears with statutory recompute-and-diff
+        expect: {basic: 64500, hra: 25800, special: 27700, earnings: 118000, pf_ee: 11000, esi_ee: 700, esi_er: 3000,
+          source_month: 2026-10}

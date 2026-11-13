@@ -1,0 +1,71 @@
+# Golden payroll cases: pf variants and labour welfare fund.
+# Money is integer paise (100 = Rs 1). Keys ending in _days/_pct/_date and the
+# keys listed in loader.NON_MONEY are not money. A check with `pending` is reported
+# as skipped with its feature until that feature lands; then remove the mark.
+# Assumptions shared by every case: gamcs_hr/tests/golden/cases/_defaults.yaml.
+area: PF variants and labour welfare fund
+cases:
+- id: G44
+  title: Voluntary PF of 10% on top of 12%
+  tags: [vpf]
+  ca_signoff: false
+  variants:
+  - name: main
+    scenario:
+      kind: pf_month
+      inputs: {code_wages: 5000000, vpf_pct: 10}
+    checks:
+      pf:
+        pending: {feature: T57, reason: voluntary PF}
+        expect: {pf_wages: 2500000, pf_ee: 300000, vpf: 500000, ecr_ee_share: 800000, eps: 208300, epf_er: 91700,
+          edli: 12500, pf_admin: 12500}
+- id: G45
+  title: 'Employee aged 58 or more: no pension share'
+  tags: [eps age]
+  ca_signoff: false
+  variants:
+  - name: main
+    scenario:
+      kind: pf_month
+      inputs: {code_wages: 4000000, age: 58}
+    checks:
+      pf:
+        pending: {feature: T57, reason: pension cut-off at 58}
+        expect: {pf_wages: 2500000, pf_ee: 300000, eps: 0, epf_er: 300000, edli: 12500, pf_admin: 12500, eps_wages: 0}
+- id: G46
+  title: 'Labour welfare fund: Maharashtra (June) and Haryana (monthly, capped)'
+  tags: [lwf]
+  ca_signoff: true
+  variants:
+  - name: maharashtra_june
+    scenario:
+      kind: lwf
+      inputs: {state: Maharashtra, month: 2026-06}
+    checks:
+      lwf:
+        pending: {feature: T59, reason: LWF packs}
+        expect: {lwf_ee: 2500, lwf_er: 7500}
+  - name: maharashtra_july
+    scenario:
+      kind: lwf
+      inputs: {state: Maharashtra, month: 2026-07}
+    checks:
+      lwf:
+        pending: {feature: T59, reason: LWF deduction months}
+        expect: {lwf_ee: 0, lwf_er: 0}
+  - name: haryana_20k
+    scenario:
+      kind: lwf
+      inputs: {state: Haryana, month: 2026-11, wages: 2000000}
+    checks:
+      lwf:
+        pending: {feature: T59, reason: Haryana LWF cap}
+        expect: {lwf_ee: 3500, lwf_er: 7000}
+  - name: haryana_15k
+    scenario:
+      kind: lwf
+      inputs: {state: Haryana, month: 2026-11, wages: 1500000}
+    checks:
+      lwf:
+        pending: {feature: T59, reason: Haryana LWF}
+        expect: {lwf_ee: 3000, lwf_er: 6000}

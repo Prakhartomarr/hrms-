@@ -46,4 +46,9 @@ bench --site "$SITE" set-config mute_emails 1
 echo "::endgroup::"
 
 # Upstream test bootstrap (before_tests) runs here, the same as on hrtest.localhost.
+# Golden payroll suite first, on its own, so a change in upstream payroll behaviour
+# (for example a version bump in versions.env) fails a clearly named step.
+echo "::group::golden payroll suite"
+bench --site "$SITE" run-tests --module gamcs_hr.tests.golden.test_golden
+echo "::endgroup::"
 bench --site "$SITE" run-tests --app gamcs_hr

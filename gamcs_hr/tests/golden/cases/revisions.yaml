@@ -1,0 +1,115 @@
+# Golden payroll cases: revisions, arrears and the september 2026 pf split.
+# Money is integer paise (100 = Rs 1). Keys ending in _days/_pct/_date and the
+# keys listed in loader.NON_MONEY are not money. A check with `pending` is reported
+# as skipped with its feature until that feature lands; then remove the mark.
+# Assumptions shared by every case: gamcs_hr/tests/golden/cases/_defaults.yaml.
+area: Revisions, arrears and the September 2026 PF split
+cases:
+- id: G28
+  title: Increment 12L to 15L from 1 August 2026, approved in November, across the ceiling change
+  tags: [arrear increment]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: increment_arrear
+      inputs:
+        old_ctc: 120000000
+        new_ctc: 150000000
+        effective_from: '2026-08-01'
+        paid_in: 2026-11
+        ytd: {taxable: 68620000, tds: 0}
+    checks:
+      arrear:
+        pending:
+          feature: [T65, T57]
+          reason: increment arrears across structure versions
+        expect: {aug_sep: 5000000, oct: 2500000, arrear: 7500000, pf_on_arrear: 0}
+      tds:
+        pending:
+          feature: [T65, T66]
+          reason: monthly TDS projection under the Income-tax Act 2025
+        expect: {taxable_income: 122120000, slab_tax: 6318000, rebate: 4198000, cess: 84800, annual_tax: 2205000,
+          taxable_with_arrear: 129620000, annual_tax_with_arrear: 7741000, tds_recurring: 441000, tds_one_time: 5536000,
+          tds: 5977000}
+      net:
+        pending:
+          feature: [T65, T57, T59, T66]
+          reason: net needs arrears, PF, PT and TDS
+        expect: {net: 13403000}
+- id: G29
+  title: 'Increment 2,40,000 to 2,64,000 from 1 September 2026: PF headroom and the September split'
+  tags: [arrear increment, pf split]
+  ca_signoff: false
+  variants:
+  - name: main
+    scenario:
+      kind: increment_arrear
+      inputs: {old_ctc: 24000000, new_ctc: 26400000, effective_from: '2026-09-01', location: non_metro, paid_in: 2026-11}
+    checks:
+      arrear:
+        pending:
+          feature: [T65, T57, T58]
+          reason: increment arrears with PF headroom and the split month
+        expect: {sep_earnings: 191400, sep_pf_wages_new: 1537333, sep_pf_wages_old: 1428600, sep_pf_ee: 13100, oct_earnings: 182800,
+          oct_pf_ee: 17200, esi_ee: 2100, earnings: 374200}
+- id: G30
+  title: Increment 12L to 15L effective 16 November 2026 (split month)
+  tags: [split month]
+  ca_signoff: false
+  variants:
+  - name: main
+    scenario:
+      kind: slip
+      period: 2026-11
+      employee: {gender: Male, state: Maharashtra, date_of_birth: '1990-05-01', date_of_joining: '2022-01-10'}
+      structure:
+      - {component: basic, monthly: 5000000, class: wages}
+      - {component: hra, monthly: 2500000, class: exclusion}
+      - {component: special, monthly: 2200000, class: wages}
+      revision:
+        effective_from: '2026-11-16'
+        structure:
+        - {component: basic, monthly: 6250000, class: wages}
+        - {component: hra, monthly: 3125000, class: exclusion}
+        - {component: special, monthly: 2825000, class: wages}
+    checks:
+      earnings:
+        pending: {feature: T65, reason: 'two structure versions inside one month, rounded once per component'}
+        expect: {basic: 5625000, hra: 2812500, special: 2512500, gross: 10950000}
+      pf:
+        pending: {feature: T57, reason: 'PF on code wages (Basic + Special) with the 25,000 ceiling and the employer
+            EPS/EPF/EDLI/admin split'}
+        expect: {pf_ee: 300000}
+- id: G31
+  title: September 2026 split-month PF for an EPF and EPS member on 20,000
+  tags: [pf split]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: pf_split_month
+      inputs: {month: 2026-09, wages: 2000000, split_day: 17, old_ceiling: 1500000, new_ceiling: 2500000, eps_member: true}
+    checks:
+      ecr:
+        pending: {feature: T57, reason: 'split-month ceiling, each return field rounded once on the month total'}
+        expect: {pf_wages_exact: 1733333, epf_wages: 1733300, eps_wages: 1733300, edli_wages: 1733300, pf_ee: 208000,
+          eps: 144400, epf_er: 63600, edli: 8700, pf_admin: 8700}
+- id: G32
+  title: 'September 2026 split month: EPF-only member joins EPS from 17 September'
+  tags: [pf split, eps entry]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: pf_split_month
+      inputs: {month: 2026-09, wages: 2000000, split_day: 17, old_ceiling: 1500000, new_ceiling: 2500000, eps_member: false}
+    checks:
+      ecr:
+        pending: {feature: T57, reason: EPS entry inside the split month}
+        expect: {epf_wages: 2000000, eps_wages_exact: 933333, eps_wages: 933300, pf_ee: 240000, eps: 77700, epf_er: 162300,
+          eps_member_from: '2026-09-17'}
+      october:
+        pending: {feature: T57, reason: 'PF on code wages (Basic + Special) with the 25,000 ceiling and the employer
+            EPS/EPF/EDLI/admin split'}
+        expect: {eps: 166600}

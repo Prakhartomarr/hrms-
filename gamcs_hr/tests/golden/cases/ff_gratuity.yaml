@@ -1,0 +1,101 @@
+# Golden payroll cases: full and final, gratuity.
+# Money is integer paise (100 = Rs 1). Keys ending in _days/_pct/_date and the
+# keys listed in loader.NON_MONEY are not money. A check with `pending` is reported
+# as skipped with its feature until that feature lands; then remove the mark.
+# Assumptions shared by every case: gamcs_hr/tests/golden/cases/_defaults.yaml.
+area: Full and final, gratuity
+cases:
+- id: G52
+  title: 'Leave encashment at exit: resignation, private employer'
+  tags: [leave encashment]
+  ca_signoff: false
+  variants:
+  - name: main
+    scenario:
+      kind: encashment_exemption
+      inputs: {days: 45, monthly_salary: 6000000, service_years: 8, leave_availed_days: 180, lifetime_limit: 250000000,
+        used: 0}
+    checks:
+      exemption:
+        pending: {feature: T75, reason: 'encashment exemption, least of four'}
+        expect: {rate_per_day: 200000, actual: 9000000, limit: 250000000, ten_months: 60000000, cash_equivalent: 9000000,
+          exempt: 9000000, taxable: 0}
+- id: G53
+  title: 'Gratuity: 7 years 8 months, last code wages 40,000'
+  tags: [gratuity]
+  ca_signoff: false
+  variants:
+  - name: main
+    scenario:
+      kind: gratuity
+      inputs: {code_wages: 4000000, service: 7y8m, separation: resignation, employment: permanent}
+    checks:
+      gratuity:
+        pending: {feature: T73, reason: gratuity amount}
+        expect: {years: 8, gratuity: 18461500, exempt: 18461500}
+- id: G54
+  title: 'Gratuity eligibility: permanent 4y 7m, fixed-term 1y 3m, death at 2 years'
+  tags: [gratuity eligibility]
+  ca_signoff: true
+  variants:
+  - name: permanent_4y7m
+    scenario:
+      kind: gratuity
+      inputs: {code_wages: 3000000, service: 4y7m, separation: resignation, employment: permanent}
+    checks:
+      gratuity:
+        pending: {feature: T73, reason: five-year eligibility}
+        expect: {eligible: false, gratuity: 0}
+  - name: fixed_term_1y3m
+    scenario:
+      kind: gratuity
+      inputs: {code_wages: 3000000, service: 1y3m, separation: contract_end, employment: fixed_term}
+    checks:
+      gratuity:
+        pending: {feature: T73, reason: fixed-term pro rata gratuity}
+        expect: {eligible: true, years: 1, gratuity: 1730800}
+  - name: death_2y
+    scenario:
+      kind: gratuity
+      inputs: {code_wages: 3000000, service: 2y0m, separation: death, employment: permanent}
+    checks:
+      gratuity:
+        pending: {feature: T73, reason: gratuity on death}
+        expect: {eligible: true, years: 2, gratuity: 3461500}
+- id: G55
+  title: Gratuity ceiling
+  tags: [gratuity cap]
+  ca_signoff: false
+  variants:
+  - name: main
+    scenario:
+      kind: gratuity
+      inputs: {code_wages: 25000000, service: 20y0m, separation: retirement, employment: permanent}
+    checks:
+      gratuity:
+        pending: {feature: T73, reason: gratuity ceiling}
+        expect: {years: 20, uncapped: 288461538, gratuity: 200000000}
+- id: G56
+  title: 'Full and final: resignation, last day 20 November 2026, notice short by 10 days, loan open'
+  tags: [full and final]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: full_and_final
+      inputs:
+        structure: G26
+        last_working_day: '2026-11-20'
+        notice_short_days: 10
+        encash_days: 12
+        loan_outstanding: 1500000
+        service: 3y2m
+        ytd: {taxable: 32900000, tds: 0}
+    checks:
+      settlement:
+        pending:
+          feature: [T75, T73, T74]
+          reason: full and final settlement
+        expect: {salary: 3133300, leave_encashment: 1000000, gratuity: 0, notice_recovery: -1566700, loan_recovery: -1500000,
+          pf_ee: -276000, pt: -20000, encashment_exempt: 1000000, income: 36033300, taxable_income: 28533000, tds: 0,
+          net_payable: 770600}

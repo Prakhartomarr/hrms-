@@ -1,0 +1,59 @@
+# Golden payroll cases: corrections, recoveries and holds.
+# Money is integer paise (100 = Rs 1). Keys ending in _days/_pct/_date and the
+# keys listed in loader.NON_MONEY are not money. A check with `pending` is reported
+# as skipped with its feature until that feature lands; then remove the mark.
+# Assumptions shared by every case: gamcs_hr/tests/golden/cases/_defaults.yaml.
+area: Corrections, recoveries and holds
+cases:
+- id: G49
+  title: October incentive keyed as 12,000 instead of 21,000, corrected in November
+  tags: [adjustment]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: adjustment
+      inputs:
+        source_month: 2026-10
+        component: incentive
+        paid: 1200000
+        correct: 2100000
+        ytd: {taxable: 69820000, tds: 0}
+        current_month: 9700000
+    checks:
+      adjustment:
+        pending: {feature: T65, reason: corrections paid as next-month adjustments}
+        expect: {adjustment: 900000, source_month: 2026-10, pf_ee: 0, esi_ee: 0, pt: 0}
+      tds:
+        pending:
+          feature: [T65, T66]
+          reason: monthly TDS projection under the Income-tax Act 2025
+        expect: {taxable_income: 110820000, taxable_with_one_time: 111720000, annual_tax: 0, tds: 0}
+- id: G50
+  title: Negative arrear carried forward under the 50% deduction cap
+  tags: [recovery, deduction cap]
+  ca_signoff: true
+  variants:
+  - name: main
+    scenario:
+      kind: recovery
+      inputs: {source_month: 2026-10, gross: 3000000, source_days: 31, lop_days: 10, current_earned: 600000, current_pt: 20000}
+    checks:
+      recovery:
+        pending: {feature: T65, reason: negative arrears with the 50% deduction cap}
+        expect: {recovery_total: 967700, cap: 300000, recovered: 280000, net: 300000, carried: 687700, flag: RECOVERY_CARRIED}
+- id: G51
+  title: Salary held in November, released with December pay
+  tags: [hold]
+  ca_signoff: false
+  variants:
+  - name: main
+    scenario:
+      kind: hold_release
+      inputs: {structure: G10, hold_month: 2026-11, release_month: 2026-12}
+    checks:
+      bank:
+        pending:
+          feature: [T63, T71]
+          reason: salary hold, statutory in the hold month, release next month
+        expect: {november_net: 9380000, november_bank: 0, december_bank: 18760000, released: 9380000}

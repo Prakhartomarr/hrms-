@@ -16,6 +16,13 @@ case "$cmd" in
 	build)   x bench build "$@" ;;
 	seed)    x bench --site "$HR_SITE" execute gamcs_hr.seed.demo.run ;;
 	test)    x bench --site "$HR_TEST_SITE" run-tests --app gamcs_hr "$@" ;;
+	golden)  # golden payroll suite; `golden probe [G1]` also runs pending slip checks and shows gaps
+		if [ "${1:-}" = probe ]; then
+			shift
+			x bench --site "$HR_TEST_SITE" execute gamcs_hr.tests.golden.probe.run ${1:+--kwargs "{\"only\": \"$1\"}"}
+		else
+			x bench --site "$HR_TEST_SITE" run-tests --module gamcs_hr.tests.golden.test_golden "$@"
+		fi ;;
 	upstream-test)  # e.g. hr.sh upstream-test hrms.hr.doctype.attendance.test_attendance
 		x bench --site "$HR_TEST_SITE" run-tests --module "$@" ;;
 	test-site)  # throwaway site for test runs, so hr.localhost demo data stays clean.
@@ -44,6 +51,8 @@ usage: infra/dev/hr.sh <command>
   migrate | build [args] | seed
   test-site      (re)create $HR_TEST_SITE (frappe+erpnext+hrms+gamcs_hr, allow_tests)
   test [args]    gamcs_hr tests on $HR_TEST_SITE
+  golden         golden payroll suite on $HR_TEST_SITE (pending checks report as skipped)
+  golden probe [G2]  run pending slip checks too and print how far each is from its values
   upstream-test <module>   one upstream test module on $HR_TEST_SITE
   reset          drop + recreate site $HR_SITE (keeps bench)
   nuke           remove containers, volumes and $HRMS_BENCH
