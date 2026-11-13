@@ -21,6 +21,8 @@ put it after everything it depends on.
 MODULES: tuple[str, ...] = (
 	# wave 0: shared helpers
 	"common",
+	# wave 0: employee app shell at /work (website routes, service worker)
+	"work_app",
 	# wave 1: platform core
 	"org",
 	"org.job_history",

@@ -1,0 +1,11 @@
+{
+  "private": true,
+  "name": "gamcs_hr",
+  "description": "Build entry for bench: the /work employee app lives in frontend/",
+  "license": "GPL-3.0",
+  "scripts": {
+    "postinstall": "cd frontend && yarn install --check-files",
+    "build": "cd frontend && yarn build",
+    "test": "cd frontend && yarn test"
+  }
+}

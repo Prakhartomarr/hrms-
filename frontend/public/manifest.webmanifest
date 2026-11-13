@@ -1,0 +1,15 @@
+{
+	"name": "GAMCS HR",
+	"short_name": "GAMCS HR",
+	"description": "Check in, apply for leave, clear approvals and see your pay.",
+	"id": "/work",
+	"start_url": "/work",
+	"scope": "/work",
+	"display": "standalone",
+	"background_color": "#ffffff",
+	"theme_color": "#0f5e97",
+	"icons": [
+		{ "src": "/assets/gamcs_hr/frontend/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+		{ "src": "/assets/gamcs_hr/frontend/icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+	]
+}

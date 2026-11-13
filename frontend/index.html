@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+		<title>GAMCS HR</title>
+		<meta name="description" content="GAMCS HR: check in, leave, approvals and pay" />
+		<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+		<meta name="theme-color" content="#0d1828" media="(prefers-color-scheme: dark)" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-title" content="GAMCS HR" />
+		<link rel="manifest" href="/assets/gamcs_hr/frontend/manifest.webmanifest" />
+		<link rel="icon" type="image/svg+xml" href="/assets/gamcs_hr/frontend/icon.svg" />
+		<link rel="apple-touch-icon" href="/assets/gamcs_hr/frontend/icon-maskable.svg" />
+	</head>
+	<body>
+		<!--
+THESIS: Every HR number is a ticked working paper: you can always see the rule behind the figure. It rejects the dashboard of KPI cards and hero metrics.
+OWN-WORLD: White and Ice (#EAF3FA) paper with a faint ruled grid. Ink is Midnight #0D1828; rules are GA Blue #0F5E97 hairlines. A drawn audit tick marks done or verified items. Signal Yellow #F2C230 is used only as a highlighter stroke on the one thing that needs you. Figures use JetBrains Mono tabular numerals, headings Plus Jakarta Sans, body Inter. Corners are square (radius 2–4px) and there is almost no shadow.
+STORY: An employee sees today's state, trusts each balance because its footnote shows how it was worked out, and acts in one tap.
+FIRST VIEWPORT: A ruled "Today" sheet. At the top, the date line and greeting. Next, the punch entry: one full-width primary button, stamped with time and place once used. Then a ruled list of balances, each ticked with a footnote link, and pending items as unticked lines. On phones, the bottom bar.
+FORM: Working papers, 2nd on the list. Seed key 7de943db. Signature interaction: the tick draws in (stroke-dashoffset, 240ms ease-out) when an item is done; footnotes expand in place.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+-->
+		<div id="app"></div>
+		<div id="modals"></div>
+		<div id="popovers"></div>
+		<script>
+			window.csrf_token = "{{ csrf_token }}"
+			if (!window.frappe) window.frappe = {}
+			try {
+				window.frappe.boot = JSON.parse(document.getElementById("boot").textContent)
+			} catch (e) {
+				window.frappe.boot = {}
+			}
+		</script>
+		<script id="boot" type="application/json">{{ boot_json | safe }}</script>
+		<script type="module" src="/src/main.ts"></script>
+	</body>
+</html>

@@ -24,7 +24,7 @@ Status: `done`, `in progress`, or blank (not started). All paths are under `gamc
 | --- | --- | --- | --- | --- | --- |
 | T01 | Framework: hooks merger (`hooks_part.py` per module, order in `modules_order.py`), per-module setup registry for custom fields and property setters, validator pipeline for doctype extensions, CI on a pinned bench in Docker, conventions doc, this queue. India payroll app evaluated and pinned (deferred to T56, ADR 0002) | `hooks.py`, `modules_order.py`, `framework/`, `common/`, `.github/`, `docker/`, `docs/conventions.md` | | A | done |
 | T02 | Site bootstrap for dev and tests: company, branches with states, departments, grades, about 30 employees in a reporting tree, holiday list, leave types; reusable test factories | `tests/factories.py`, `scripts/bootstrap.py` (both under `gamcs_hr/`) | T01 | Q | done |
-| T03 | Employee app shell at `/work`: Vue SPA, routes auto-registered from `pages/**/route.ts`, phone bottom bar and desktop nav, header with search and notifications, design tokens, formatting helpers (₹ with lakh grouping, dates, durations like `7h 30m`), page actions with one primary button, success and empty states, PWA manifest and service worker shell | `frontend/` (except `pages/*`), `www/work.py` | T01 | F | |
+| T03 | Employee app shell at `/work`: Vue SPA, routes auto-registered from `pages/**/route.ts`, phone bottom bar and desktop nav, header with search and notifications, design tokens, formatting helpers (₹ with lakh grouping, dates, durations like `7h 30m`), page actions with one primary button, success and empty states, PWA manifest and service worker shell | `frontend/` (except `pages/*`), `www/work.py` | T01 | F | done |
 
 ## Wave 1: platform core
 

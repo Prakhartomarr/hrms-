@@ -1,0 +1,97 @@
+/* Base element styles for the /work app. Tokens only; no raw colours here. */
+html {
+	-webkit-text-size-adjust: 100%;
+}
+
+html {
+	scrollbar-color: var(--color-scrollbar) transparent;
+	scrollbar-width: thin;
+}
+
+body {
+	margin: 0;
+	/* Ruled paper ground: a faint GA Blue hairline grid on the 8 pt grid. */
+	background-color: var(--color-bg);
+	background-image:
+		linear-gradient(var(--color-paper-rule) var(--rule-width), transparent var(--rule-width)),
+		linear-gradient(90deg, var(--color-paper-rule) var(--rule-width), transparent var(--rule-width));
+	background-size: var(--paper-cell) var(--paper-cell);
+	background-attachment: fixed;
+	caret-color: var(--color-caret);
+	color: var(--color-text);
+	font-family: var(--font-body);
+	font-size: var(--text-md);
+	line-height: var(--text-md-lh);
+	-webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+	font-family: var(--font-heading);
+	color: var(--color-text);
+	margin: 0;
+	text-wrap: balance;
+}
+
+p {
+	margin: 0;
+	text-wrap: pretty;
+}
+
+a {
+	color: var(--color-link);
+	text-decoration-thickness: 1px;
+	text-underline-offset: 0.2em;
+}
+
+::selection {
+	background: var(--color-selection);
+	color: var(--color-text);
+}
+
+::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+::-webkit-scrollbar-thumb {
+	background: var(--color-scrollbar);
+	border: 3px solid transparent;
+	border-radius: var(--radius-full);
+	background-clip: padding-box;
+}
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+/* Numbers (money, hours, counts) use the mono face with tabular figures. */
+.num {
+	font-family: var(--font-mono);
+	font-variant-numeric: tabular-nums;
+	letter-spacing: -0.01em;
+}
+
+:focus-visible {
+	outline: var(--focus-ring-width) solid var(--color-focus);
+	outline-offset: 2px;
+	border-radius: var(--radius-sm);
+}
+
+.visually-hidden {
+	position: absolute !important;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		transition-duration: 0.01ms !important;
+	}
+}

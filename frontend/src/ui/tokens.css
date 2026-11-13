@@ -1,0 +1,261 @@
+/*
+ * Design tokens for the /work app. Direction: "Working papers" (.impeccable, seed 7de943db).
+ * Paper ground with a faint GA Blue ruled grid, Midnight ink, square corners, almost no
+ * shadow, mono tabular figures, a drawn audit tick, Signal Yellow only as a highlighter.
+ *
+ * Two layers:
+ *   1. Brand palette (--brand-*): the raw GAMCS colours. Only this file uses hex values.
+ *   2. Semantic tokens (--color-*, --font-*, --space-*, ...): what components use.
+ *
+ * To re-skin, change the semantic layer (or the brand values) here. Components must
+ * never reference --brand-* or a raw hex value; they use the semantic tokens only.
+ *
+ * Contrast notes (WCAG AA, 4.5:1 for text, 3:1 for UI parts), checked for both themes:
+ *   text on surface ~16:1, muted text on surface >= 6.5:1, primary on surface ~6.9:1
+ *   (light) / ~10:1 (dark), status text on its tint >= 4.8:1.
+ */
+
+:root {
+	/* ---- 1. Brand palette ---------------------------------------------------- */
+	--brand-ga-blue: #0f5e97;
+	--brand-deep-navy: #0a4169;
+	--brand-midnight: #0d1828;
+	--brand-signal-yellow: #f2c230;
+	--brand-sky: #9cc8ea;
+	--brand-ice: #eaf3fa;
+	--brand-white: #ffffff;
+
+	/* ---- 2. Typography ------------------------------------------------------- */
+	--font-heading: "Plus Jakarta Sans Variable", "Plus Jakarta Sans", system-ui, sans-serif;
+	--font-body: "Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+	--font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+
+	/* Type scale: sizes with line heights on the 4/8 pt grid. Body line height 1.5. */
+	--text-xs: 0.75rem; /* 12 */
+	--text-xs-lh: 1rem;
+	--text-sm: 0.875rem; /* 14 */
+	--text-sm-lh: 1.25rem;
+	--text-md: 1rem; /* 16, body */
+	--text-md-lh: 1.5rem;
+	--text-lg: 1.125rem; /* 18 */
+	--text-lg-lh: 1.75rem;
+	--text-xl: 1.25rem; /* 20 */
+	--text-xl-lh: 1.75rem;
+	--text-2xl: 1.5rem; /* 24 */
+	--text-2xl-lh: 2rem;
+	--text-3xl: 2rem; /* 32 */
+	--text-3xl-lh: 2.5rem;
+
+	--weight-regular: 400;
+	--weight-medium: 500;
+	--weight-semibold: 600;
+	--weight-bold: 700;
+
+	/* ---- 3. Spacing: 8 pt grid (with a 4 pt half step for tight spots) ----- */
+	--space-0: 0;
+	--space-half: 0.25rem; /* 4 */
+	--space-1: 0.5rem; /* 8 */
+	--space-2: 1rem; /* 16 */
+	--space-3: 1.5rem; /* 24 */
+	--space-4: 2rem; /* 32 */
+	--space-5: 2.5rem; /* 40 */
+	--space-6: 3rem; /* 48 */
+	--space-8: 4rem; /* 64 */
+
+	/* ---- 4. Radius ----------------------------------------------------------- */
+	/* Working papers: square corners, 2-4px. --radius-full is for dots and the spinner. */
+	--radius-sm: 2px;
+	--radius-md: 3px;
+	--radius-lg: 4px;
+	--radius-full: 999px;
+
+	/* Ruled paper: grid cell on the 8 pt grid, hairline width. */
+	--paper-cell: 24px;
+	--rule-width: 1px;
+
+	/* ---- 5. Sizes ------------------------------------------------------------ */
+	--touch-min: 44px; /* minimum touch target */
+	--control-height: 44px;
+	--header-height: 56px;
+	--bottom-nav-height: 64px;
+	--side-nav-width: 240px;
+	--content-max: 960px;
+	--focus-ring-width: 2px;
+
+	/* ---- 6. Motion ----------------------------------------------------------- */
+	--duration-fast: 120ms;
+	--duration-normal: 200ms;
+	--duration-tick: 240ms;
+	--ease-out: cubic-bezier(0.215, 0.61, 0.355, 1);
+	--ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+	/* ---- 7. Light theme (default) -------------------------------------------- */
+	color-scheme: light;
+
+	--color-bg: #f5f8fb; /* page background, a near-white tint of Ice */
+	--color-surface: var(--brand-white); /* cards, sheets, nav */
+	--color-surface-muted: var(--brand-ice); /* hover rows, subtle fills */
+	--color-surface-raised: var(--brand-white);
+	--color-border: #d3e0ec;
+	--color-border-strong: #8ea3b8; /* inputs: 3:1 against surface */
+
+	--color-text: var(--brand-midnight); /* near-black, never pure #000 */
+	--color-text-muted: #4a5b6f;
+	--color-text-subtle: #5d6e82; /* still AA (5.2:1) on surface */
+	--color-text-inverse: var(--brand-white);
+
+	--color-primary: var(--brand-ga-blue);
+	--color-primary-hover: var(--brand-deep-navy);
+	--color-on-primary: var(--brand-white);
+	--color-primary-tint: var(--brand-ice);
+	--color-link: var(--brand-ga-blue);
+
+	--color-accent: var(--brand-signal-yellow); /* highlights and the unread dot only */
+	--color-on-accent: var(--brand-midnight);
+
+	--color-focus: var(--brand-ga-blue);
+
+	--color-success: #17663f;
+	--color-success-tint: #e3f4ea;
+	--color-warning: #7a4f00;
+	--color-warning-tint: #fdf3d3;
+	--color-danger: #b42318;
+	--color-danger-tint: #fdecea;
+	--color-info: var(--brand-deep-navy);
+	--color-info-tint: var(--brand-ice);
+	--color-neutral: #45566a;
+	--color-neutral-tint: #edf1f5;
+
+	--color-skeleton: #e3ebf3;
+	--color-skeleton-shine: #f2f6fa;
+	--color-backdrop: rgb(13 24 40 / 0.45);
+
+	/* Paper, rules and marks */
+	--color-paper: var(--brand-white);
+	--color-paper-rule: rgb(15 94 151 / 0.07); /* the faint GA Blue grid */
+	--color-rule: rgb(15 94 151 / 0.28); /* ruled lines between entries */
+	--color-rule-strong: var(--brand-ga-blue); /* a sheet's top rule */
+	--color-tick: var(--brand-ga-blue); /* the audit tick */
+	--color-stamp: var(--brand-deep-navy);
+	--color-highlight: var(--brand-signal-yellow); /* highlighter stroke, one item only */
+	--color-selection: rgb(156 200 234 / 0.55);
+	--color-caret: var(--brand-ga-blue);
+	--color-scrollbar: #b7c8d8;
+
+	/* Almost no shadow: sheets lift only when they float over the page. */
+	--shadow-sm: none;
+	--shadow-md: 0 1px 0 rgb(13 24 40 / 0.06);
+	--shadow-lg: 0 4px 16px rgb(13 24 40 / 0.12);
+}
+
+/* ---- 8. Dark theme: follows the system unless data-theme="light" is set -------- */
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme="light"]) {
+		color-scheme: dark;
+
+		--color-bg: var(--brand-midnight);
+		--color-surface: #13233a;
+		--color-surface-muted: #1a2e4a;
+		--color-surface-raised: #182b45;
+		--color-border: #26405f;
+		--color-border-strong: #5b7896;
+
+		--color-text: var(--brand-ice);
+		--color-text-muted: #a9bcd0;
+		--color-text-subtle: #93a8bf;
+		--color-text-inverse: var(--brand-midnight);
+
+		--color-primary: var(--brand-sky);
+		--color-primary-hover: #bfdcf2;
+		--color-on-primary: var(--brand-midnight);
+		--color-primary-tint: #1a3655;
+		--color-link: var(--brand-sky);
+
+		--color-focus: var(--brand-sky);
+
+		--color-success: #7fd8a8;
+		--color-success-tint: #123a2a;
+		--color-warning: #f2c230;
+		--color-warning-tint: #3a3010;
+		--color-danger: #ff9b91;
+		--color-danger-tint: #431c1c;
+		--color-info: var(--brand-sky);
+		--color-info-tint: #1a3655;
+		--color-neutral: #b8c7d6;
+		--color-neutral-tint: #22364f;
+
+		--color-skeleton: #1d3150;
+		--color-skeleton-shine: #26405f;
+		--color-backdrop: rgb(4 9 16 / 0.65);
+
+		--color-paper: #111f33;
+		--color-paper-rule: rgb(156 200 234 / 0.05);
+		--color-rule: rgb(156 200 234 / 0.22);
+		--color-rule-strong: var(--brand-sky);
+		--color-tick: var(--brand-sky);
+		--color-stamp: var(--brand-sky);
+		--color-highlight: var(--brand-signal-yellow);
+		--color-selection: rgb(15 94 151 / 0.7);
+		--color-caret: var(--brand-sky);
+		--color-scrollbar: #34506f;
+
+		--shadow-sm: none;
+		--shadow-md: 0 1px 0 rgb(0 0 0 / 0.3);
+		--shadow-lg: 0 4px 16px rgb(0 0 0 / 0.45);
+	}
+}
+
+/* Explicit dark theme (same values as above), for a future theme switch. */
+:root[data-theme="dark"] {
+	color-scheme: dark;
+
+	--color-bg: var(--brand-midnight);
+	--color-surface: #13233a;
+	--color-surface-muted: #1a2e4a;
+	--color-surface-raised: #182b45;
+	--color-border: #26405f;
+	--color-border-strong: #5b7896;
+
+	--color-text: var(--brand-ice);
+	--color-text-muted: #a9bcd0;
+	--color-text-subtle: #93a8bf;
+	--color-text-inverse: var(--brand-midnight);
+
+	--color-primary: var(--brand-sky);
+	--color-primary-hover: #bfdcf2;
+	--color-on-primary: var(--brand-midnight);
+	--color-primary-tint: #1a3655;
+	--color-link: var(--brand-sky);
+
+	--color-focus: var(--brand-sky);
+
+	--color-success: #7fd8a8;
+	--color-success-tint: #123a2a;
+	--color-warning: #f2c230;
+	--color-warning-tint: #3a3010;
+	--color-danger: #ff9b91;
+	--color-danger-tint: #431c1c;
+	--color-info: var(--brand-sky);
+	--color-info-tint: #1a3655;
+	--color-neutral: #b8c7d6;
+	--color-neutral-tint: #22364f;
+
+	--color-skeleton: #1d3150;
+	--color-skeleton-shine: #26405f;
+	--color-backdrop: rgb(4 9 16 / 0.65);
+
+	--color-paper: #111f33;
+	--color-paper-rule: rgb(156 200 234 / 0.05);
+	--color-rule: rgb(156 200 234 / 0.22);
+	--color-rule-strong: var(--brand-sky);
+	--color-tick: var(--brand-sky);
+	--color-stamp: var(--brand-sky);
+	--color-highlight: var(--brand-signal-yellow);
+	--color-selection: rgb(15 94 151 / 0.7);
+	--color-caret: var(--brand-sky);
+	--color-scrollbar: #34506f;
+
+	--shadow-sm: none;
+	--shadow-md: 0 1px 0 rgb(0 0 0 / 0.3);
+	--shadow-lg: 0 4px 16px rgb(0 0 0 / 0.45);
+}
