@@ -1,0 +1,26 @@
+[project]
+name = "gamcs_hr"
+authors = [{ name = "GA Management Consultants LLP" }]
+description = "GAMCS HR: HRMS extensions on top of Frappe HR and ERPNext"
+requires-python = ">=3.14,<3.15"
+readme = "README.md"
+license = "GPL-3.0-only"
+dynamic = ["version"]
+dependencies = []
+
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.bench.frappe-dependencies]
+frappe = ">=16.0.0,<17.0.0"
+erpnext = ">=16.0.0,<17.0.0"
+hrms = ">=16.0.0,<17.0.0"
+
+[tool.ruff]
+line-length = 110
+target-version = "py310"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "tab"
